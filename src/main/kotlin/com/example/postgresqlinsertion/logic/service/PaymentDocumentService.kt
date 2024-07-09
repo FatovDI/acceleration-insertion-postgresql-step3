@@ -12,10 +12,7 @@ import com.example.postgresqlinsertion.batchinsertion.utils.logger
 import com.example.postgresqlinsertion.logic.entity.AccountEntity
 import com.example.postgresqlinsertion.logic.entity.CurrencyEntity
 import com.example.postgresqlinsertion.logic.entity.PaymentDocumentEntity
-import com.example.postgresqlinsertion.logic.repository.AccountRepository
-import com.example.postgresqlinsertion.logic.repository.CurrencyRepository
-import com.example.postgresqlinsertion.logic.repository.PaymentDocumentCrudRepository
-import com.example.postgresqlinsertion.logic.repository.PaymentDocumentCustomRepository
+import com.example.postgresqlinsertion.logic.repository.*
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
@@ -46,12 +43,27 @@ class PaymentDocumentService(
     private val pdCrudRepository: PaymentDocumentCrudRepository,
     private val byPropertyProcessor: BatchInsertionByPropertyProcessor,
     private val dataSource: DataSource,
+    private val asyncRepo: PaymentDocumentAsyncInsertRepository,
 ) {
 
     @PersistenceContext
     lateinit var entityManager: EntityManager
 
     private val log by logger()
+
+@Transactional
+fun saveByConcurrentBatch(count: Int) {
+    val currencies = currencyRepo.findAll()
+    val accounts = accountRepo.findAll()
+
+    log.info("start save $count by Spring with async repository")
+    val listForSave = mutableListOf<PaymentDocumentEntity>()
+    for (i in 0 until count) {
+        listForSave.add(getRandomEntity(null, currencies.random(), accounts.random()))
+    }
+    asyncRepo.saveAllByConcurrentBatch(listForSave)
+    log.info("end save $count by Spring with async repository")
+}
 
     fun saveByCopy(count: Int) {
         val currencies = currencyRepo.findAll()

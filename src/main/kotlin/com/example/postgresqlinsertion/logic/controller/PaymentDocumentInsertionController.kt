@@ -11,6 +11,18 @@ class PaymentDocumentInsertionController(
     val service: PaymentDocumentService
 ) {
 
+    @PostMapping("/insert-with-async-repository/{count}")
+    fun insertByConcurrentBatch(@PathVariable count: Int): ResponseDto {
+        val time = measureTimeMillis {
+            service.saveByConcurrentBatch(count)
+        }
+        return ResponseDto(
+            name = "Save by spring with async repository",
+            count = count,
+            time = getTimeString(time)
+        )
+    }
+
     @PostMapping("/copy/{count}")
     fun insertViaCopy(@PathVariable count: Int): ResponseDto {
         val time = measureTimeMillis {
