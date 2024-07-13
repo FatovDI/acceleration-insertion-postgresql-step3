@@ -24,4 +24,4 @@ class PaymentDocumentEntity(
     var prop15: String? = null,
     @Column(name = "prop_20")
     var prop20: String? = null,
-) : BaseEntity()
+) : BaseAsyncInsertEntity()
