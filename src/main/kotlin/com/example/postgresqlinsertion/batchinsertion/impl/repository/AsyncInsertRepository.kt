@@ -1,12 +1,14 @@
 package com.example.postgresqlinsertion.batchinsertion.impl.repository
 
 import com.example.postgresqlinsertion.logic.entity.BaseAsyncInsertEntity
+import com.example.postgresqlinsertion.logic.entity.BaseEntity
 import org.hibernate.SessionFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import java.util.concurrent.Executors
 
-abstract class AsyncInsertRepository<E: BaseAsyncInsertEntity> {
+//abstract class AsyncInsertRepository<E: BaseAsyncInsertEntity> {
+abstract class AsyncInsertRepository<E: BaseEntity> {
 
     @Value("\${batch_insertion.batch_size}")
     private var batchSize: Int = 5000
@@ -31,10 +33,10 @@ abstract class AsyncInsertRepository<E: BaseAsyncInsertEntity> {
     }
 
     fun saveAllByConcurrentBatch(entities: List<E>): List<E> {
-        entities.forEach { it.readyToRead = false }
+//        entities.forEach { it.readyToRead = false }
         val futures = entities.chunked(batchSize).map { executorService.submit<List<E>> { saveBatch(it) } }
         futures.flatMap { it.get() }
-        entities.forEach { it.readyToRead = true }
+//        entities.forEach { it.readyToRead = true }
         return saveBatch(entities)
     }
 }

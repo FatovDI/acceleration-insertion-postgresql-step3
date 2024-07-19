@@ -20,6 +20,7 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSourceUtils
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.util.concurrent.Future
 import javax.persistence.EntityManager
 import javax.persistence.PersistenceContext
 import javax.sql.DataSource
@@ -37,19 +38,41 @@ class PaymentDocumentService(
     private val sqlHelper: SqlHelper,
     private val pdBatchByEntitySaverFactory: BatchInsertionByEntityFactory<PaymentDocumentEntity>,
     private val pdBatchByPropertySaverFactory: BatchInsertionByPropertyFactory<PaymentDocumentEntity>,
-    private val pdCustomRepository: PaymentDocumentCustomRepository,
+    private val repository: PaymentDocumentCustomRepository,
     private val jdbcTemplate: JdbcTemplate,
     private val namedJdbcTemplate: NamedParameterJdbcTemplate,
     private val pdCrudRepository: PaymentDocumentCrudRepository,
     private val byPropertyProcessor: BatchInsertionByPropertyProcessor,
     private val dataSource: DataSource,
     private val asyncRepo: PaymentDocumentAsyncInsertRepository,
+    private val saver: PaymentDocumentSaver,
 ) {
 
     @PersistenceContext
     lateinit var entityManager: EntityManager
 
     private val log by logger()
+
+    @Transactional
+    fun saveBySpringConcurrent(count: Int) {
+        val currencies = currencyRepo.findAll()
+        val accounts = accountRepo.findAll()
+
+        val asyncResult = mutableListOf<Future<List<PaymentDocumentEntity>>>()
+
+        log.info("start save $count by Spring with async")
+        var listForSave = mutableListOf<PaymentDocumentEntity>()
+        for (i in 0 until count) {
+            listForSave.add(getRandomEntity(null, currencies.random(), accounts.random()))
+            if (i != 0 && i % batchSize == 0) {
+                log.info("save batch $batchSize by Spring with async")
+                asyncResult.add(saver.saveBatchAsync(listForSave))
+                listForSave = mutableListOf()
+            }
+        }
+        asyncResult.flatMap { it.get() }
+        log.info("end save $count by Spring with async")
+    }
 
     @Transactional
     fun saveByConcurrentBatch(count: Int) {
@@ -462,7 +485,7 @@ class PaymentDocumentService(
 
                 log.info("start call saveAll method $count via spring")
 
-                pdCustomRepository.saveAll(it)
+                repository.saveAll(it)
             }
 
         log.info("end saveAll $count via spring")
@@ -476,7 +499,7 @@ class PaymentDocumentService(
 
         log.info("start save $count by Spring")
         for (i in 0 until count) {
-            pdCustomRepository.save(
+            repository.save(
                 getRandomEntity(null, currencies.random(), accounts.random())
             )
         }
@@ -511,7 +534,7 @@ class PaymentDocumentService(
         log.info("start save by copy $count via spring")
 
         for (i in 0 until count) {
-            pdCustomRepository.saveByCopy(getRandomEntity(null, currencies.random(), accounts.random()))
+            repository.saveByCopy(getRandomEntity(null, currencies.random(), accounts.random()))
         }
 
         log.info("end save by copy $count via spring")
@@ -526,7 +549,7 @@ class PaymentDocumentService(
         log.info("start save by copy concurrent $count via Spring")
 
         for (i in 0 until count) {
-            pdCustomRepository.saveByCopyConcurrent(getRandomEntity(null, currencies.random(), accounts.random()))
+            repository.saveByCopyConcurrent(getRandomEntity(null, currencies.random(), accounts.random()))
         }
 
         log.info("end save by copy concurrent $count via Spring")
@@ -542,7 +565,7 @@ class PaymentDocumentService(
 
         (1..count)
             .map {getRandomEntity(null, currencies.random(), accounts.random())}
-            .let { pdCustomRepository.saveAllByCopy(it) }
+            .let { repository.saveAllByCopy(it) }
 
         log.info("end save all by copy $count via Spring")
 
@@ -639,18 +662,13 @@ class PaymentDocumentService(
         val currencies = currencyRepo.findAll()
         val accounts = accountRepo.findAll()
 
-        log.info("start update $count via spring")
-
         for (i in 0 until count) {
-            pdCustomRepository.save(getRandomEntity(listId[i], currencies.random(), accounts.random()))
+            repository.save(getRandomEntity(listId[i], currencies.random(), accounts.random()))
         }
-
-        log.info("end update $count via spring")
-
     }
 
     fun findAllByOrderNumberAndOrderDate(orderNumber: String, orderDate: LocalDate): List<PaymentDocumentEntity> {
-        return pdCustomRepository.findAllByOrderNumberAndOrderDate(orderNumber, orderDate)
+        return repository.findAllByOrderNumberAndOrderDate(orderNumber, orderDate)
     }
 
     private fun getRandomEntity(
