@@ -53,24 +53,16 @@ class PaymentDocumentService(
 
     private val log by logger()
 
-    @Transactional
     fun saveBySpringConcurrent(count: Int) {
         val currencies = currencyRepo.findAll()
         val accounts = accountRepo.findAll()
 
-        val asyncResult = mutableListOf<Future<List<PaymentDocumentEntity>>>()
-
         log.info("start save $count by Spring with async")
-        var listForSave = mutableListOf<PaymentDocumentEntity>()
+        val listForSave = mutableListOf<PaymentDocumentEntity>()
         for (i in 0 until count) {
             listForSave.add(getRandomEntity(null, currencies.random(), accounts.random()))
-            if (i != 0 && i % batchSize == 0) {
-                log.info("save batch $batchSize by Spring with async")
-                asyncResult.add(saver.saveBatchAsync(listForSave))
-                listForSave = mutableListOf()
-            }
         }
-        asyncResult.flatMap { it.get() }
+        listForSave.chunked(batchSize).map { saver.saveBatchAsync(it) }.flatMap { it.get() }
         log.info("end save $count by Spring with async")
     }
 
