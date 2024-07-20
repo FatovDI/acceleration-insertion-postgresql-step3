@@ -23,13 +23,17 @@ class PaymentDocumentSaver(
     }
 
     @Async("threadPoolAsyncInsertExecutor")
-    fun saveBatchAsyncBySession(entities: List<PaymentDocumentEntity>): Future<List<PaymentDocumentEntity>> {
+    fun saveBatchBySessionAsync(entities: List<PaymentDocumentEntity>): Future<List<PaymentDocumentEntity>> {
+        return AsyncResult(saveBatchBySession(entities))
+    }
+
+    fun saveBatchBySession(entities: List<PaymentDocumentEntity>): List<PaymentDocumentEntity> {
         val session = sessionFactory.openSession()
         val transaction = session.beginTransaction()
         entities.forEach { session.saveOrUpdate(it) }
         transaction.commit()
         session.close()
-        return AsyncResult(entities)
+        return entities
     }
 
 }

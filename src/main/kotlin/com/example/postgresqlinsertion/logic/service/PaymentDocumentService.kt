@@ -74,7 +74,7 @@ class PaymentDocumentService(
         for (i in 0 until count) {
             listForSave.add(getRandomEntity(null, currencies.random(), accounts.random()))
         }
-        listForSave.chunked(batchSize).map { saver.saveBatchAsyncBySession(it) }.flatMap { it.get() }
+        listForSave.chunked(batchSize).map { saver.saveBatchBySessionAsync(it) }.flatMap { it.get() }
         log.info("end save $count by Spring with async and session")
     }
 
@@ -669,6 +669,18 @@ class PaymentDocumentService(
         for (i in 0 until count) {
             repository.save(getRandomEntity(listId[i], currencies.random(), accounts.random()))
         }
+    }
+
+    fun updateBySpringWithSession(count: Int) {
+        val listId = sqlHelper.getIdListForUpdate(count, PaymentDocumentEntity::class)
+        val currencies = currencyRepo.findAll()
+        val accounts = accountRepo.findAll()
+
+        val listForSave = mutableListOf<PaymentDocumentEntity>()
+        for (i in 0 until count) {
+            listForSave.add(getRandomEntity(listId[i], currencies.random(), accounts.random()))
+        }
+        saver.saveBatchBySession(listForSave)
     }
 
     fun findAllByOrderNumberAndOrderDate(orderNumber: String, orderDate: LocalDate): List<PaymentDocumentEntity> {

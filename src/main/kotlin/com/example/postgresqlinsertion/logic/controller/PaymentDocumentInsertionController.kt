@@ -419,6 +419,18 @@ class PaymentDocumentInsertionController(
         )
     }
 
+    @PostMapping("/spring-update-by-session/{count}")
+    fun updateViaSpringBySession(@PathVariable count: Int): ResponseDto {
+        val time = measureTimeMillis {
+            service.updateBySpringWithSession(count)
+        }
+        return ResponseDto(
+            name = "Update via spring by session",
+            count = count,
+            time = getTimeString(time)
+        )
+    }
+
     private fun getTimeString(time: Long):String {
         val min = (time / 1000) / 60
         val sec = (time / 1000) % 60
