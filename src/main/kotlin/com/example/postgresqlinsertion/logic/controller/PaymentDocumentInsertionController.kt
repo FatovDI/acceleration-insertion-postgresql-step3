@@ -23,6 +23,19 @@ class PaymentDocumentInsertionController(
         )
     }
 
+
+    @PostMapping("/insert-by-spring-with-async-and-session/{count}")
+    fun insertBySpringWithAsyncAndSession(@PathVariable count: Int): ResponseDto {
+        val time = measureTimeMillis {
+            service.saveBySpringConcurrentWithSession(count)
+        }
+        return ResponseDto(
+            name = "Save by spring with async and session",
+            count = count,
+            time = getTimeString(time)
+        )
+    }
+
     @PostMapping("/insert-with-async-repository/{count}")
     fun insertByConcurrentBatch(@PathVariable count: Int): ResponseDto {
         val time = measureTimeMillis {

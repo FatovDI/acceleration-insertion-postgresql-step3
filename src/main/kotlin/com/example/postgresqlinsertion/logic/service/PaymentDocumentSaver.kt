@@ -2,6 +2,7 @@ package com.example.postgresqlinsertion.logic.service
 
 import com.example.postgresqlinsertion.logic.entity.PaymentDocumentEntity
 import com.example.postgresqlinsertion.logic.repository.PaymentDocumentRepository
+import org.hibernate.SessionFactory
 import org.springframework.scheduling.annotation.Async
 import org.springframework.scheduling.annotation.AsyncResult
 import org.springframework.stereotype.Component
@@ -10,7 +11,8 @@ import javax.transaction.Transactional
 
 @Component
 class PaymentDocumentSaver(
-    val paymentDocumentRepository: PaymentDocumentRepository
+    val paymentDocumentRepository: PaymentDocumentRepository,
+    val sessionFactory: SessionFactory,
 ) {
 
     @Transactional(Transactional.TxType.REQUIRES_NEW)
@@ -18,6 +20,16 @@ class PaymentDocumentSaver(
     fun saveBatchAsync(entities: List<PaymentDocumentEntity>): Future<List<PaymentDocumentEntity>> {
         val savedEntities = paymentDocumentRepository.saveAll(entities)
         return AsyncResult(savedEntities)
+    }
+
+    @Async("threadPoolAsyncInsertExecutor")
+    fun saveBatchAsyncBySession(entities: List<PaymentDocumentEntity>): Future<List<PaymentDocumentEntity>> {
+        val session = sessionFactory.openSession()
+        val transaction = session.beginTransaction()
+        entities.forEach { session.saveOrUpdate(it) }
+        transaction.commit()
+        session.close()
+        return AsyncResult(entities)
     }
 
 }

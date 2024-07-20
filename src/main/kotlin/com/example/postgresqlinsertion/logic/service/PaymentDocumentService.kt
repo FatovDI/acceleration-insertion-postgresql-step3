@@ -20,7 +20,6 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSourceUtils
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import java.time.LocalDate
-import java.util.concurrent.Future
 import javax.persistence.EntityManager
 import javax.persistence.PersistenceContext
 import javax.sql.DataSource
@@ -64,6 +63,19 @@ class PaymentDocumentService(
         }
         listForSave.chunked(batchSize).map { saver.saveBatchAsync(it) }.flatMap { it.get() }
         log.info("end save $count by Spring with async")
+    }
+
+    fun saveBySpringConcurrentWithSession(count: Int) {
+        val currencies = currencyRepo.findAll()
+        val accounts = accountRepo.findAll()
+
+        log.info("start save $count by Spring with async and session")
+        val listForSave = mutableListOf<PaymentDocumentEntity>()
+        for (i in 0 until count) {
+            listForSave.add(getRandomEntity(null, currencies.random(), accounts.random()))
+        }
+        listForSave.chunked(batchSize).map { saver.saveBatchAsyncBySession(it) }.flatMap { it.get() }
+        log.info("end save $count by Spring with async and session")
     }
 
     @Transactional
