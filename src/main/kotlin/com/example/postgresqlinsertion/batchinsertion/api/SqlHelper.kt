@@ -21,6 +21,14 @@ interface SqlHelper {
     fun getIdListForUpdate(count: Int, clazz: KClass<out BaseEntity>): List<Long>
 
     /**
+     * Get list id for set ready to read flag
+     * @param count - count of id
+     * @param clazz - class entity for get table name
+     * @return List<Long> - list of id
+     */
+    fun getIdListForSetReadyToRead(count: Int, clazz: KClass<out BaseEntity>): List<Long>
+
+    /**
      * Drop index by entity
      * @param clazz - entity class
      * @return String - string of script to create dropped index

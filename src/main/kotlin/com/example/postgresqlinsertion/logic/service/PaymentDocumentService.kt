@@ -683,8 +683,11 @@ class PaymentDocumentService(
         saver.saveBatchBySession(listForSave)
     }
 
-    fun setReadyToRead(ids: List<Long>) {
-        saver.setReadyToRead(ids)
+    fun setReadyToRead(count: Int): Int {
+        log.info("get list id for set ready to read $count")
+        val listId = sqlHelper.getIdListForSetReadyToRead(count, PaymentDocumentEntity::class)
+        log.info("start set ready to read $count")
+        return saver.setReadyToRead(listId).sumOf { it.sum() }
     }
 
     fun findAllByOrderNumberAndOrderDate(orderNumber: String, orderDate: LocalDate): List<PaymentDocumentEntity> {

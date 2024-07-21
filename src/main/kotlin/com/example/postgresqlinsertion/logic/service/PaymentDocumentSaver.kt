@@ -24,8 +24,8 @@ class PaymentDocumentSaver(
 
     private val jdbcTemplate = JdbcTemplate(dataSource)
 
-    fun setReadyToRead(idList: List<Long>) {
-        jdbcTemplate.batchUpdate(
+    fun setReadyToRead(idList: List<Long>): Array<IntArray> {
+        return jdbcTemplate.batchUpdate(
             "update payment_document set ready_to_read = true where id = ?",
             idList, batchSize) {  ps, argument ->
             ps.setLong(1, argument)

@@ -287,18 +287,15 @@ class PaymentDocumentInsertionController(
         )
     }
 
-    @PostMapping("/set-ready-to-read")
-    fun setReadyToRead(
-        @RequestParam idStart: Long,
-        @RequestParam idEnd: Long
-    ): ResponseDto {
-        val listId = (idStart..idEnd).toList()
+    @PostMapping("/set-ready-to-read/{count}")
+    fun setReadyToRead(@PathVariable count: Int): ResponseDto {
+        var countUpd: Int
         val time = measureTimeMillis {
-            service.setReadyToRead(listId)
+            countUpd = service.setReadyToRead(count)
         }
         return ResponseDto(
             name = "Set ready to read jdbcTemplate",
-            count = listId.size,
+            count = countUpd,
             time = getTimeString(time)
         )
     }
