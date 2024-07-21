@@ -683,6 +683,10 @@ class PaymentDocumentService(
         saver.saveBatchBySession(listForSave)
     }
 
+    fun setReadyToRead(ids: List<Long>) {
+        saver.setReadyToRead(ids)
+    }
+
     fun findAllByOrderNumberAndOrderDate(orderNumber: String, orderDate: LocalDate): List<PaymentDocumentEntity> {
         return repository.findAllByOrderNumberAndOrderDate(orderNumber, orderDate)
     }
