@@ -24,6 +24,16 @@ class PaymentDocumentSaver(
 
     private val jdbcTemplate = JdbcTemplate(dataSource)
 
+    fun setReadyToReadUnnest(idList: List<Long>): Int {
+        return jdbcTemplate.update(
+            """
+                update payment_document pd set ready_to_read = true 
+                from (select unnest(?) as id) as id_table where pd.id = id_table.id
+            """.trimIndent()) {  ps ->
+            ps.setObject(1, idList.toTypedArray())
+        }
+    }
+
     fun setReadyToRead(idList: List<Long>): Array<IntArray> {
         return jdbcTemplate.batchUpdate(
             "update payment_document set ready_to_read = true where id = ?",

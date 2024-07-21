@@ -690,6 +690,13 @@ class PaymentDocumentService(
         return saver.setReadyToRead(listId).sumOf { it.sum() }
     }
 
+    fun setReadyToReadUnnest(count: Int): Int {
+        log.info("get list id for set ready to read with unnest $count")
+        val listId = sqlHelper.getIdListForSetReadyToRead(count, PaymentDocumentEntity::class)
+        log.info("start set ready to read with unnest $count")
+        return saver.setReadyToReadUnnest(listId)
+    }
+
     fun findAllByOrderNumberAndOrderDate(orderNumber: String, orderDate: LocalDate): List<PaymentDocumentEntity> {
         return repository.findAllByOrderNumberAndOrderDate(orderNumber, orderDate)
     }

@@ -300,6 +300,19 @@ class PaymentDocumentInsertionController(
         )
     }
 
+    @PostMapping("/set-ready-to-read-unnest/{count}")
+    fun setReadyToReadUnnest(@PathVariable count: Int): ResponseDto {
+        var countUpd: Int
+        val time = measureTimeMillis {
+            countUpd = service.setReadyToReadUnnest(count)
+        }
+        return ResponseDto(
+            name = "Set ready to read unnest",
+            count = countUpd,
+            time = getTimeString(time)
+        )
+    }
+
     @PostMapping("/insert-with-drop-index/{count}")
     fun insertViaInsertWithDropIndex(@PathVariable count: Int): ResponseDto {
         val time = measureTimeMillis {
