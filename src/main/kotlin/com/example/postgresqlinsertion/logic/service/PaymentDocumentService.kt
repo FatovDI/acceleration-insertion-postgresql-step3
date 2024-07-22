@@ -456,6 +456,27 @@ class PaymentDocumentService(
 
     }
 
+    fun setReadyToReadByKProperty(transactionId: UUID): Int {
+        val connection = dataSource.connection
+
+        log.info("start set ready to read by kproperty")
+
+        val count = byPropertyProcessor.updateDataToDataBasePreparedStatement(
+            PaymentDocumentEntity::class,
+            setOf(PaymentDocumentEntity::readyToRead),
+            listOf(listOf(true, transactionId)),
+            listOf("transaction_id"),
+            connection
+        )
+
+        connection.close()
+
+        log.info("end set ready to read by kproperty")
+
+        return count
+
+    }
+
     fun saveByInsertWithDropIndex(count: Int) {
         val currencies = currencyRepo.findAll()
         val accounts = accountRepo.findAll()
@@ -739,6 +760,7 @@ class PaymentDocumentService(
         )
             .apply { this.id = id }
             .apply { this.transactionId = transactionId }
+            .apply { this.readyToRead = transactionId?.let { false }?: true }
     }
 
     private fun fillRandomDataByKProperty(

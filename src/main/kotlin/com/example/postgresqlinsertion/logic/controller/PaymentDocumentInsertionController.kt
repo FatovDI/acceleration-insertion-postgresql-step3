@@ -291,6 +291,21 @@ class PaymentDocumentInsertionController(
         )
     }
 
+    @PostMapping("/set-ready-to-read-by-kproperty/{transactionId}")
+    fun setReadyToReadByKProperty(
+        @PathVariable transactionId: UUID,
+    ): ResponseDto {
+        var count: Int
+        val time = measureTimeMillis {
+            count = service.setReadyToReadByKProperty(transactionId)
+        }
+        return ResponseDto(
+            name = "Set ready to read by kproperty",
+            count = count,
+            time = getTimeString(time)
+        )
+    }
+
     @PostMapping("/set-ready-to-read/{count}")
     fun setReadyToRead(@PathVariable count: Int): ResponseDto {
         var countUpd: Int
