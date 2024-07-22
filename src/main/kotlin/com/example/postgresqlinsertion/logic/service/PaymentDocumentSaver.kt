@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.scheduling.annotation.Async
 import org.springframework.scheduling.annotation.AsyncResult
 import org.springframework.stereotype.Component
+import java.util.UUID
 import java.util.concurrent.Future
 import javax.sql.DataSource
 import javax.transaction.Transactional
@@ -23,6 +24,15 @@ class PaymentDocumentSaver(
     private var batchSize: Int = 5000
 
     private val jdbcTemplate = JdbcTemplate(dataSource)
+
+    fun setReadyToRead(transactionId: UUID): Int {
+        return jdbcTemplate.update(
+            """
+                update payment_document set ready_to_read = true where transaction_id = ?
+            """.trimIndent()) {  ps ->
+            ps.setObject(1, transactionId)
+        }
+    }
 
     fun setReadyToReadUnnest(idList: List<Long>): Int {
         return jdbcTemplate.update(
@@ -47,6 +57,23 @@ class PaymentDocumentSaver(
     fun saveBatchAsync(entities: List<PaymentDocumentEntity>): Future<List<PaymentDocumentEntity>> {
         val savedEntities = paymentDocumentRepository.saveAll(entities)
         return AsyncResult(savedEntities)
+    }
+
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    @Async("threadPoolAsyncInsertExecutor")
+    fun setTransactionIdAsync(ids: List<Long>): Future<Array<IntArray>> {
+        return AsyncResult(setTransactionId(ids))
+    }
+
+    fun setTransactionId(ids: List<Long>): Array<IntArray> {
+        val uuid = UUID.randomUUID()
+        return jdbcTemplate.batchUpdate(
+            "update payment_document set transaction_id = ? where id = ?",
+            ids, batchSize
+        ) { ps, argument ->
+            ps.setObject(1, uuid)
+            ps.setLong(2, argument)
+        }
     }
 
     @Async("threadPoolAsyncInsertExecutor")

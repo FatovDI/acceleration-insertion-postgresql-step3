@@ -19,7 +19,10 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.jdbc.core.namedparam.SqlParameterSourceUtils
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
+import java.math.BigInteger
 import java.time.LocalDate
+import java.util.*
+import java.util.concurrent.Future
 import javax.persistence.EntityManager
 import javax.persistence.PersistenceContext
 import javax.sql.DataSource
@@ -695,6 +698,20 @@ class PaymentDocumentService(
         val listId = sqlHelper.getIdListForSetReadyToRead(count, PaymentDocumentEntity::class)
         log.info("start set ready to read with unnest $count")
         return saver.setReadyToReadUnnest(listId)
+    }
+
+    fun setReadyToReadByTransactionId(transactionId: UUID): Int {
+        return saver.setReadyToRead(transactionId)
+    }
+
+    fun setTransactionId(count: Int, countRow: Int = 4000000): Int {
+        val results = mutableListOf<Future<Array<IntArray>>>()
+        for (i in 0 until count) {
+            val listId = entityManager.createNativeQuery("select id from payment_document where transaction_id is null limit $countRow").resultList as List<BigInteger>
+
+            results.add(saver.setTransactionIdAsync(listId.map { it.toLong() }))
+        }
+        return results.flatMap { it.get().toList() }.sumOf { it.sum() }
     }
 
     fun findAllByOrderNumberAndOrderDate(orderNumber: String, orderDate: LocalDate): List<PaymentDocumentEntity> {

@@ -3,6 +3,7 @@ package com.example.postgresqlinsertion.logic.controller
 import com.example.postgresqlinsertion.logic.dto.ResponseDto
 import com.example.postgresqlinsertion.logic.service.PaymentDocumentService
 import org.springframework.web.bind.annotation.*
+import java.util.UUID
 import kotlin.system.measureTimeMillis
 
 @RestController
@@ -308,6 +309,35 @@ class PaymentDocumentInsertionController(
         }
         return ResponseDto(
             name = "Set ready to read unnest",
+            count = countUpd,
+            time = getTimeString(time)
+        )
+    }
+
+    @PostMapping("/set-transaction-id/{count}")
+    fun setTransactionId(
+        @PathVariable count: Int,
+        @RequestParam countRow: Int = 4000000
+    ): ResponseDto {
+        var countUpd: Int
+        val time = measureTimeMillis {
+            countUpd = service.setTransactionId(count, countRow)
+        }
+        return ResponseDto(
+            name = "Set transaction ID",
+            count = countUpd,
+            time = getTimeString(time)
+        )
+    }
+
+    @PostMapping("/set-ready-to-read-by-transaction-id/{transactionId}")
+    fun setReadyToReadByTransactionId(@PathVariable transactionId: UUID): ResponseDto {
+        var countUpd: Int
+        val time = measureTimeMillis {
+            countUpd = service.setReadyToReadByTransactionId(transactionId)
+        }
+        return ResponseDto(
+            name = "Set ready to read by transaction ID",
             count = countUpd,
             time = getTimeString(time)
         )
