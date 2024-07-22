@@ -55,14 +55,14 @@ class PaymentDocumentService(
 
     private val log by logger()
 
-    fun saveBySpringConcurrent(count: Int) {
+    fun saveBySpringConcurrent(count: Int, transactionId: UUID? = null) {
         val currencies = currencyRepo.findAll()
         val accounts = accountRepo.findAll()
 
         log.info("start save $count by Spring with async")
         val listForSave = mutableListOf<PaymentDocumentEntity>()
         for (i in 0 until count) {
-            listForSave.add(getRandomEntity(null, currencies.random(), accounts.random()))
+            listForSave.add(getRandomEntity(null, currencies.random(), accounts.random(), null, transactionId))
         }
         listForSave.chunked(batchSize).map { saver.saveBatchAsync(it) }.flatMap { it.get() }
         log.info("end save $count by Spring with async")
@@ -254,13 +254,13 @@ class PaymentDocumentService(
 
     }
 
-    fun saveByInsertWithPreparedStatement(count: Int, orderNumber: String? = null) {
+    fun saveByInsertWithPreparedStatement(count: Int, orderNumber: String? = null, transactionId: UUID? = null) {
         val currencies = currencyRepo.findAll()
         val accounts = accountRepo.findAll()
 
         pdBatchByEntitySaverFactory.getSaver(SaverType.INSERT_PREPARED_STATEMENT).use { saver ->
             for (i in 0 until count) {
-                saver.addDataForSave(getRandomEntity(null, currencies.random(), accounts.random(), orderNumber))
+                saver.addDataForSave(getRandomEntity(null, currencies.random(), accounts.random(), orderNumber, transactionId))
             }
             saver.commit()
         }
@@ -722,7 +722,8 @@ class PaymentDocumentService(
         id: Long?,
         cur: CurrencyEntity,
         account: AccountEntity,
-        orderNumber: String? = null
+        orderNumber: String? = null,
+        transactionId: UUID? = null
     ): PaymentDocumentEntity {
         return PaymentDocumentEntity(
             orderDate = LocalDate.now(),
@@ -735,7 +736,9 @@ class PaymentDocumentService(
             prop10 = getRandomString(10),
             prop15 = getRandomString(15),
             prop20 = getRandomString(20),
-        ).apply { this.id = id }
+        )
+            .apply { this.id = id }
+            .apply { this.transactionId = transactionId }
     }
 
     private fun fillRandomDataByKProperty(

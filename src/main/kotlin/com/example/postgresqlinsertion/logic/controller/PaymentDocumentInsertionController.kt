@@ -13,9 +13,12 @@ class PaymentDocumentInsertionController(
 ) {
 
     @PostMapping("/insert-by-spring-with-async/{count}")
-    fun insertBySpringWithAsync(@PathVariable count: Int): ResponseDto {
+    fun insertBySpringWithAsync(
+        @PathVariable count: Int,
+        @RequestParam transactionId: UUID? = null
+    ): ResponseDto {
         val time = measureTimeMillis {
-            service.saveBySpringConcurrent(count)
+            service.saveBySpringConcurrent(count, transactionId)
         }
         return ResponseDto(
             name = "Save by spring with async",

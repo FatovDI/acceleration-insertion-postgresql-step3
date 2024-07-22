@@ -1,6 +1,7 @@
 package com.example.postgresqlinsertion.logic.entity
 
 import org.hibernate.annotations.Where
+import java.util.*
 import javax.persistence.Entity
 import javax.persistence.Inheritance
 import javax.persistence.InheritanceType
@@ -11,5 +12,6 @@ import javax.persistence.InheritanceType
 abstract class BaseAsyncInsertEntity : BaseEntity() {
 
     var readyToRead: Boolean = true
+    var transactionId: UUID? = null
 
 }
