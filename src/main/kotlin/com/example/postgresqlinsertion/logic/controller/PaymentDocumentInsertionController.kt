@@ -374,6 +374,21 @@ class PaymentDocumentInsertionController(
         )
     }
 
+    @PostMapping("/set-ready-to-read-after-insert/{count}")
+    fun setReadyToReadAfterInsert(@PathVariable count: Int): ResponseDto {
+        var countUpd: Int
+        val transactionId = UUID.randomUUID()
+        service.saveBySpringConcurrent(count, transactionId)
+        val time = measureTimeMillis {
+            countUpd = service.setReadyToReadByTransactionId(transactionId)
+        }
+        return ResponseDto(
+            name = "Set ready to read after insert",
+            count = countUpd,
+            time = getTimeString(time)
+        )
+    }
+
     @PostMapping("/insert-with-drop-index/{count}")
     fun insertViaInsertWithDropIndex(@PathVariable count: Int): ResponseDto {
         val time = measureTimeMillis {

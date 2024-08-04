@@ -62,7 +62,7 @@ class PaymentDocumentService(
         log.info("start save $count by Spring with async")
         val listForSave = mutableListOf<PaymentDocumentEntity>()
         for (i in 0 until count) {
-            listForSave.add(getRandomEntity(null, currencies.random(), accounts.random(), null, transactionId))
+            listForSave.add(getRandomEntity(null, currencies.random(), accounts.random(), null, transactionId).apply { readyToRead = false })
         }
         listForSave.chunked(batchSize).map { saver.saveBatchAsync(it) }.flatMap { it.get() }
         log.info("end save $count by Spring with async")
