@@ -1,5 +1,6 @@
 package com.example.postgresqlinsertion.logic.controller
 
+import com.example.postgresqlinsertion.batchinsertion.utils.getRandomString
 import com.example.postgresqlinsertion.logic.dto.ResponseDto
 import com.example.postgresqlinsertion.logic.service.PaymentDocumentService
 import org.springframework.web.bind.annotation.*
@@ -287,6 +288,23 @@ class PaymentDocumentInsertionController(
         return ResponseDto(
             name = "Update only one field with common condition",
             count = count,
+            time = getTimeString(time)
+        )
+    }
+
+
+    @PostMapping("/update-only-one-field-with-common-condition-after-insert/{count}")
+    fun updateOnlyOneFieldWithCommonConditionAfterInsert(@PathVariable count: Int): ResponseDto {
+        var countUpd: Int
+        val orderNumber = getRandomString(10)
+        val prop10 = "prop10"
+        service.saveByInsertWithPreparedStatementAndUnnest(count, orderNumber)
+        val time = measureTimeMillis {
+            countUpd = service.updateOnlyOneFieldWithCommonCondition(orderNumber, prop10)
+        }
+        return ResponseDto(
+            name = "Update only one field with common condition after insert",
+            count = countUpd,
             time = getTimeString(time)
         )
     }
