@@ -44,6 +44,15 @@ class PaymentDocumentSaver(
         }
     }
 
+    fun setReadyToReadArray(idList: List<Long>): Int {
+        return jdbcTemplate.update(
+            """
+                update payment_document set ready_to_read = true where id = any (?)
+            """.trimIndent()) {  ps ->
+            ps.setObject(1, idList.toTypedArray())
+        }
+    }
+
     fun setReadyToRead(idList: List<Long>): Array<IntArray> {
         return jdbcTemplate.batchUpdate(
             "update payment_document set ready_to_read = true where id = ?",
@@ -82,11 +91,11 @@ class PaymentDocumentSaver(
     }
 
     fun saveBatchBySession(entities: List<PaymentDocumentEntity>): List<PaymentDocumentEntity> {
-        val session = sessionFactory.openSession()
-        val transaction = session.beginTransaction()
-        entities.forEach { session.saveOrUpdate(it) }
-        transaction.commit()
-        session.close()
+        sessionFactory.openSession().use { session ->
+            val transaction = session.beginTransaction()
+            entities.forEach { session.saveOrUpdate(it) }
+            transaction.commit()
+        }
         return entities
     }
 

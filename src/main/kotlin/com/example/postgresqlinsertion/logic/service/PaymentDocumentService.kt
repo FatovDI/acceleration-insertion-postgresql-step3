@@ -721,16 +721,22 @@ class PaymentDocumentService(
         return saver.setReadyToReadUnnest(listId)
     }
 
+    fun setReadyToReadArray(count: Int): Int {
+        log.info("get list id for set ready to read with array $count")
+        val listId = sqlHelper.getIdListForSetReadyToRead(count, PaymentDocumentEntity::class)
+        log.info("start set ready to read with array $count")
+        return saver.setReadyToReadArray(listId)
+    }
+
     fun setReadyToReadByTransactionId(transactionId: UUID): Int {
         return saver.setReadyToRead(transactionId)
     }
 
     fun setTransactionId(count: Int, countRow: Int = 4000000): Int {
         val results = mutableListOf<Future<Array<IntArray>>>()
-        for (i in 0 until count) {
-            val listId = entityManager.createNativeQuery("select id from payment_document where transaction_id is null limit $countRow").resultList as List<BigInteger>
-
-            results.add(saver.setTransactionIdAsync(listId.map { it.toLong() }))
+        val listId = entityManager.createNativeQuery("select id from payment_document where transaction_id is null limit ${countRow*count}").resultList as List<BigInteger>
+        listId.chunked(countRow).forEach {ids ->
+            results.add(saver.setTransactionIdAsync(ids.map { it.toLong() }))
         }
         return results.flatMap { it.get().toList() }.sumOf { it.sum() }
     }

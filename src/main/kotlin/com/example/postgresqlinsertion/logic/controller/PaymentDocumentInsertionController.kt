@@ -332,6 +332,19 @@ class PaymentDocumentInsertionController(
         )
     }
 
+    @PostMapping("/set-ready-to-read-array/{count}")
+    fun setReadyToReadArray(@PathVariable count: Int): ResponseDto {
+        var countUpd: Int
+        val time = measureTimeMillis {
+            countUpd = service.setReadyToReadArray(count)
+        }
+        return ResponseDto(
+            name = "Set ready to read unnest",
+            count = countUpd,
+            time = getTimeString(time)
+        )
+    }
+
     @PostMapping("/set-transaction-id/{count}")
     fun setTransactionId(
         @PathVariable count: Int,
