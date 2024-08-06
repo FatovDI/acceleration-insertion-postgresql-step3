@@ -357,7 +357,7 @@ class PaymentDocumentInsertionController(
             countUpd = service.setReadyToReadArray(count)
         }
         return ResponseDto(
-            name = "Set ready to read unnest",
+            name = "Set ready to read array",
             count = countUpd,
             time = getTimeString(time)
         )
