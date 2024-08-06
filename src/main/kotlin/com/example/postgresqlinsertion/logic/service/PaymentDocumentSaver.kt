@@ -25,7 +25,7 @@ class PaymentDocumentSaver(
 
     private val jdbcTemplate = JdbcTemplate(dataSource)
 
-    fun setReadyToRead(transactionId: String): Int {
+    fun setReadyToRead(transactionId: Long): Int {
         return jdbcTemplate.update(
             """
                 update payment_document set ready_to_read = true where transaction_id = ?

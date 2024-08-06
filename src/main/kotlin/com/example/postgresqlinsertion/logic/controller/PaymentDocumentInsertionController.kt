@@ -1,5 +1,6 @@
 package com.example.postgresqlinsertion.logic.controller
 
+import com.example.postgresqlinsertion.batchinsertion.impl.SqlHelper
 import com.example.postgresqlinsertion.batchinsertion.utils.getRandomString
 import com.example.postgresqlinsertion.logic.dto.ResponseDto
 import com.example.postgresqlinsertion.logic.service.PaymentDocumentService
@@ -10,13 +11,14 @@ import kotlin.system.measureTimeMillis
 @RestController
 @RequestMapping("/test-insertion")
 class PaymentDocumentInsertionController(
-    val service: PaymentDocumentService
+    val service: PaymentDocumentService,
+    val sqlHelper: SqlHelper
 ) {
 
     @PostMapping("/insert-by-spring-with-async/{count}")
     fun insertBySpringWithAsync(
         @PathVariable count: Int,
-        @RequestParam transactionId: String? = null
+        @RequestParam transactionId: Long? = null
     ): ResponseDto {
         val time = measureTimeMillis {
             service.saveBySpringConcurrent(count, transactionId)
@@ -380,7 +382,7 @@ class PaymentDocumentInsertionController(
     }
 
     @PostMapping("/set-ready-to-read-by-transaction-id/{transactionId}")
-    fun setReadyToReadByTransactionId(@PathVariable transactionId: String): ResponseDto {
+    fun setReadyToReadByTransactionId(@PathVariable transactionId: Long): ResponseDto {
         var countUpd: Int
         val time = measureTimeMillis {
             countUpd = service.setReadyToReadByTransactionId(transactionId)
@@ -395,7 +397,8 @@ class PaymentDocumentInsertionController(
     @PostMapping("/set-ready-to-read-after-insert/{count}")
     fun setReadyToReadAfterInsert(@PathVariable count: Int): ResponseDto {
         var countUpd: Int
-        val transactionId = UUID.randomUUID().toString()
+        val transactionId = sqlHelper.nextIdList(1).first()
+//        val transactionId = UUID.randomUUID().toString()
         service.saveBySpringConcurrent(count, transactionId)
         val time = measureTimeMillis {
             countUpd = service.setReadyToReadByTransactionId(transactionId)
