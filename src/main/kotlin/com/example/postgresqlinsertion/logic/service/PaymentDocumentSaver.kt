@@ -1,5 +1,6 @@
 package com.example.postgresqlinsertion.logic.service
 
+import com.example.postgresqlinsertion.batchinsertion.utils.getRandomString
 import com.example.postgresqlinsertion.logic.entity.PaymentDocumentEntity
 import com.example.postgresqlinsertion.logic.repository.PaymentDocumentRepository
 import org.hibernate.SessionFactory
@@ -75,12 +76,13 @@ class PaymentDocumentSaver(
     }
 
     fun setTransactionId(ids: List<Long>): Array<IntArray> {
-        val uuid = UUID.randomUUID()
+        val transactionId = getRandomString(10)
+//        val transactionId = UUID.randomUUID()
         return jdbcTemplate.batchUpdate(
             "update payment_document set transaction_id = ? where id = ?",
             ids, batchSize
         ) { ps, argument ->
-            ps.setObject(1, uuid)
+            ps.setObject(1, transactionId)
             ps.setLong(2, argument)
         }
     }
