@@ -313,7 +313,7 @@ class PaymentDocumentInsertionController(
 
     @PostMapping("/set-ready-to-read-by-kproperty/{transactionId}")
     fun setReadyToReadByKProperty(
-        @PathVariable transactionId: UUID,
+        @PathVariable transactionId: Long,
     ): ResponseDto {
         var count: Int
         val time = measureTimeMillis {

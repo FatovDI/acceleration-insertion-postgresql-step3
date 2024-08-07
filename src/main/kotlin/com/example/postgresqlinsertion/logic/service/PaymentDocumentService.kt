@@ -456,7 +456,7 @@ class PaymentDocumentService(
 
     }
 
-    fun setReadyToReadByKProperty(transactionId: UUID): Int {
+    fun setReadyToReadByKProperty(transactionId: Long): Int {
         val connection = dataSource.connection
 
         log.info("start set ready to read by kproperty")
