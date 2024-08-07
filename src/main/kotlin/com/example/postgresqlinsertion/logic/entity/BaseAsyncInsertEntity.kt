@@ -12,6 +12,6 @@ import javax.persistence.InheritanceType
 abstract class BaseAsyncInsertEntity : BaseEntity() {
 
     var readyToRead: Boolean = true
-    var transactionId: Long? = null
+    var transactionId: String? = null
 
 }
