@@ -6,6 +6,12 @@ import kotlin.reflect.KClass
 interface SqlHelper {
 
     /**
+     * Get transaction id
+     * @return Short - transaction id
+     */
+    fun nextTransactionId(): Short
+
+    /**
      * Get list id by count
      * @param count - count of id
      * @return List<Long> - list of id

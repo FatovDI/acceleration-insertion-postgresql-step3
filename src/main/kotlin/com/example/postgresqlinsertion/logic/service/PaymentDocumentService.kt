@@ -55,14 +55,15 @@ class PaymentDocumentService(
 
     private val log by logger()
 
-    fun saveBySpringConcurrent(count: Int, transactionId: UUID? = null) {
+    fun saveBySpringConcurrent(count: Int, transactionId: Short? = null) {
         val currencies = currencyRepo.findAll()
         val accounts = accountRepo.findAll()
 
         log.info("start save $count by Spring with async")
         val listForSave = mutableListOf<PaymentDocumentEntity>()
         for (i in 0 until count) {
-            listForSave.add(getRandomEntity(null, currencies.random(), accounts.random(), null, transactionId).apply { readyToRead = false })
+            listForSave.add(getRandomEntity(null, currencies.random(), accounts.random(), null, transactionId))
+//            listForSave.add(getRandomEntity(null, currencies.random(), accounts.random(), null, transactionId).apply { readyToRead = false })
         }
         listForSave.chunked(batchSize).map { saver.saveBatchAsync(it) }.flatMap { it.get() }
         log.info("end save $count by Spring with async")
@@ -254,7 +255,7 @@ class PaymentDocumentService(
 
     }
 
-    fun saveByInsertWithPreparedStatement(count: Int, orderNumber: String? = null, transactionId: UUID? = null) {
+    fun saveByInsertWithPreparedStatement(count: Int, orderNumber: String? = null, transactionId: Short? = null) {
         val currencies = currencyRepo.findAll()
         val accounts = accountRepo.findAll()
 
@@ -456,15 +457,17 @@ class PaymentDocumentService(
 
     }
 
-    fun setReadyToReadByKProperty(transactionId: UUID): Int {
+    fun setReadyToReadByKProperty(transactionId: Short): Int {
         val connection = dataSource.connection
 
         log.info("start set ready to read by kproperty")
 
         val count = byPropertyProcessor.updateDataToDataBasePreparedStatement(
             PaymentDocumentEntity::class,
-            setOf(PaymentDocumentEntity::readyToRead),
-            listOf(listOf(true, transactionId)),
+            setOf(PaymentDocumentEntity::transactionId),
+            listOf(listOf(null, transactionId)),
+//            setOf(PaymentDocumentEntity::readyToRead),
+//            listOf(listOf(true, transactionId)),
             listOf("transaction_id"),
             connection
         )
@@ -728,7 +731,7 @@ class PaymentDocumentService(
         return saver.setReadyToReadArray(listId)
     }
 
-    fun setReadyToReadByTransactionId(transactionId: UUID): Int {
+    fun setReadyToReadByTransactionId(transactionId: Short): Int {
         return saver.setReadyToRead(transactionId)
     }
 
@@ -750,7 +753,7 @@ class PaymentDocumentService(
         cur: CurrencyEntity,
         account: AccountEntity,
         orderNumber: String? = null,
-        transactionId: UUID? = null
+        transactionId: Short? = null
     ): PaymentDocumentEntity {
         return PaymentDocumentEntity(
             orderDate = LocalDate.now(),
@@ -766,7 +769,7 @@ class PaymentDocumentService(
         )
             .apply { this.id = id }
             .apply { this.transactionId = transactionId }
-            .apply { this.readyToRead = transactionId?.let { false }?: true }
+//            .apply { this.readyToRead = transactionId?.let { false }?: true }
     }
 
     private fun fillRandomDataByKProperty(

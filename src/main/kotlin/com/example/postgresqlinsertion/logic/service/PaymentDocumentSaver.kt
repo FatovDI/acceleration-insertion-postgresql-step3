@@ -1,6 +1,6 @@
 package com.example.postgresqlinsertion.logic.service
 
-import com.example.postgresqlinsertion.batchinsertion.utils.getRandomString
+import com.example.postgresqlinsertion.batchinsertion.api.SqlHelper
 import com.example.postgresqlinsertion.logic.entity.PaymentDocumentEntity
 import com.example.postgresqlinsertion.logic.repository.PaymentDocumentRepository
 import org.hibernate.SessionFactory
@@ -9,7 +9,6 @@ import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.scheduling.annotation.Async
 import org.springframework.scheduling.annotation.AsyncResult
 import org.springframework.stereotype.Component
-import java.util.UUID
 import java.util.concurrent.Future
 import javax.sql.DataSource
 import javax.transaction.Transactional
@@ -18,7 +17,8 @@ import javax.transaction.Transactional
 class PaymentDocumentSaver(
     val paymentDocumentRepository: PaymentDocumentRepository,
     val sessionFactory: SessionFactory,
-    final val dataSource: DataSource,
+    val dataSource: DataSource,
+    val sqlHelper: SqlHelper
 ) {
 
     @Value("\${batch_insertion.batch_size}")
@@ -26,7 +26,7 @@ class PaymentDocumentSaver(
 
     private val jdbcTemplate = JdbcTemplate(dataSource)
 
-    fun setReadyToRead(transactionId: UUID): Int {
+    fun setReadyToRead(transactionId: Short): Int {
         return jdbcTemplate.update(
             """
                 update payment_document set ready_to_read = true where transaction_id = ?
@@ -77,7 +77,8 @@ class PaymentDocumentSaver(
 
     fun setTransactionId(ids: List<Long>): Array<IntArray> {
 //        val transactionId = getRandomString(10)
-        val transactionId = UUID.randomUUID()
+//        val transactionId = UUID.randomUUID()
+        val transactionId = sqlHelper.nextTransactionId()
         return jdbcTemplate.batchUpdate(
             "update payment_document set transaction_id = ? where id = ?",
             ids, batchSize

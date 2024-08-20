@@ -13,6 +13,16 @@ class SqlHelper(
     private val dataSource: DataSource
 ): SqlHelper {
 
+    override fun nextTransactionId(): Short {
+        return dataSource.connection.use { conn ->
+            conn
+                .prepareStatement("SELECT nextval('seq_trans_id')")
+                .use { stmnt ->
+                    stmnt.executeQuery().toList { it.getShort(1) }.first()
+                }
+        }
+    }
+
     override fun nextIdList(count: Int): List<Long> {
         return dataSource.connection.use { conn ->
             conn

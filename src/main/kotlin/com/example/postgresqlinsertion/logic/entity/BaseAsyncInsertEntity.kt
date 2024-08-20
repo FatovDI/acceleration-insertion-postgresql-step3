@@ -8,10 +8,12 @@ import javax.persistence.InheritanceType
 
 @Entity
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-@Where(clause = "ready_to_read = true")
+@Where(clause = "transaction_id is null")
 abstract class BaseAsyncInsertEntity : BaseEntity() {
 
-    var readyToRead: Boolean = true
-    var transactionId: UUID? = null
+    var transactionId: Short? = null
 
 }
+
+
+//    var readyToRead: Boolean = true
