@@ -55,7 +55,7 @@ class PaymentDocumentService(
 
     private val log by logger()
 
-    fun saveBySpringConcurrent(count: Int, transactionId: Short? = null) {
+    fun saveBySpringConcurrent(count: Int, transactionId: UUID? = null) {
         val currencies = currencyRepo.findAll()
         val accounts = accountRepo.findAll()
 
@@ -255,7 +255,7 @@ class PaymentDocumentService(
 
     }
 
-    fun saveByInsertWithPreparedStatement(count: Int, orderNumber: String? = null, transactionId: Short? = null) {
+    fun saveByInsertWithPreparedStatement(count: Int, orderNumber: String? = null, transactionId: UUID? = null) {
         val currencies = currencyRepo.findAll()
         val accounts = accountRepo.findAll()
 
@@ -731,7 +731,7 @@ class PaymentDocumentService(
         return saver.setReadyToReadArray(listId)
     }
 
-    fun setReadyToReadByTransactionId(transactionId: Short): Int {
+    fun setReadyToReadByTransactionId(transactionId: UUID): Int {
         return saver.setReadyToRead(transactionId)
     }
 
@@ -753,7 +753,7 @@ class PaymentDocumentService(
         cur: CurrencyEntity,
         account: AccountEntity,
         orderNumber: String? = null,
-        transactionId: Short? = null
+        transactionId: UUID? = null
     ): PaymentDocumentEntity {
         return PaymentDocumentEntity(
             orderDate = LocalDate.now(),

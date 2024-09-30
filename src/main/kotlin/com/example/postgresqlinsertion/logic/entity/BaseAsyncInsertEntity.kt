@@ -2,16 +2,15 @@ package com.example.postgresqlinsertion.logic.entity
 
 import org.hibernate.annotations.Where
 import java.util.*
-import javax.persistence.Entity
-import javax.persistence.Inheritance
-import javax.persistence.InheritanceType
+import javax.persistence.*
 
 @Entity
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-@Where(clause = "transaction_id is null")
+@Where(clause = "ready_to_read = true")
+//@Where(clause = "transaction_id is null") //todo uncomment
 abstract class BaseAsyncInsertEntity : BaseEntity() {
 
-    var transactionId: Short? = null
+    var transactionId: UUID? = null
 
 }
 

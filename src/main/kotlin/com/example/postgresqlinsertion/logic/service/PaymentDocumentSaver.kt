@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.scheduling.annotation.Async
 import org.springframework.scheduling.annotation.AsyncResult
 import org.springframework.stereotype.Component
+import java.util.UUID
 import java.util.concurrent.Future
 import javax.sql.DataSource
 import javax.transaction.Transactional
@@ -26,7 +27,8 @@ class PaymentDocumentSaver(
 
     private val jdbcTemplate = JdbcTemplate(dataSource)
 
-    fun setReadyToRead(transactionId: Short): Int {
+    // todo тут нужно будет сделать потом set transactional_id = null и проверку
+    fun setReadyToRead(transactionId: UUID): Int {
         return jdbcTemplate.update(
             """
                 update payment_document set ready_to_read = true where transaction_id = ?
