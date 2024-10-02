@@ -401,7 +401,7 @@ class PaymentDocumentInsertionController(
 //        val transactionId = sqlHelper.nextIdList(1).first()
 //        val transactionId = sqlHelper.nextTransactionId()
         val transactionId = UUID.randomUUID()
-        service.saveBySpringConcurrent(count, transactionId)
+        service.saveBySpring(count, transactionId)
         val time = measureTimeMillis {
             countUpd = service.setReadyToReadByTransactionId(transactionId)
         }

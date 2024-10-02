@@ -524,14 +524,14 @@ class PaymentDocumentService(
     }
 
     @Transactional
-    fun saveBySpring(count: Int) {
+    fun saveBySpring(count: Int, transactionId: UUID? = null) {
         val currencies = currencyRepo.findAll()
         val accounts = accountRepo.findAll()
 
         log.info("start save $count by Spring")
         for (i in 0 until count) {
             repository.save(
-                getRandomEntity(null, currencies.random(), accounts.random())
+                getRandomEntity(null, currencies.random(), accounts.random(), null, transactionId)
             )
         }
         log.info("end save $count by Spring")
