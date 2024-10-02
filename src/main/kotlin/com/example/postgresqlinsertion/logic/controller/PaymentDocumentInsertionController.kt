@@ -104,9 +104,12 @@ class PaymentDocumentInsertionController(
     }
 
     @PostMapping("/copy-by-file/{count}")
-    fun insertViaCopyByFile(@PathVariable count: Int): ResponseDto {
+    fun insertViaCopyByFile(
+        @PathVariable count: Int,
+        @RequestParam transactionId: UUID? = null
+    ): ResponseDto {
         val time = measureTimeMillis {
-            service.saveByCopyViaFile(count)
+            service.saveByCopyViaFile(count, transactionId)
         }
         return ResponseDto(
             name = "Copy method via file",
@@ -401,7 +404,7 @@ class PaymentDocumentInsertionController(
 //        val transactionId = sqlHelper.nextIdList(1).first()
 //        val transactionId = sqlHelper.nextTransactionId()
         val transactionId = UUID.randomUUID()
-        service.saveBySpring(count, transactionId)
+        service.saveByCopyViaFile(count, transactionId)
         val time = measureTimeMillis {
             countUpd = service.setReadyToReadByTransactionId(transactionId)
         }

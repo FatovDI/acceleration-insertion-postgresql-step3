@@ -170,13 +170,13 @@ class PaymentDocumentService(
         log.info("end save binary data by copy method by property $count")
     }
 
-    fun saveByCopyViaFile(count: Int) {
+    fun saveByCopyViaFile(count: Int, transactionId: UUID? = null) {
         val currencies = currencyRepo.findAll()
         val accounts = accountRepo.findAll()
 
         pdBatchByEntitySaverFactory.getSaver(SaverType.COPY_VIA_FILE).use { saver ->
             for (i in 0 until count) {
-                saver.addDataForSave(getRandomEntity(null, currencies.random(), accounts.random()))
+                saver.addDataForSave(getRandomEntity(null, currencies.random(), accounts.random(), null, transactionId))
             }
             saver.commit()
         }
