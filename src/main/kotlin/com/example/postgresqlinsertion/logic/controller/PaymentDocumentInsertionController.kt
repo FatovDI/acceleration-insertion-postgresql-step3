@@ -425,9 +425,12 @@ class PaymentDocumentInsertionController(
     }
 
     @PostMapping("/spring/{count}")
-    fun insertViaSpring(@PathVariable count: Int): ResponseDto {
+    fun insertViaSpring(
+        @PathVariable count: Int,
+        @RequestParam transactionId: UUID? = null
+    ): ResponseDto {
         val time = measureTimeMillis {
-            service.saveBySpring(count)
+            service.saveBySpring(count, transactionId)
         }
         return ResponseDto(
             name = "Save by Spring",
