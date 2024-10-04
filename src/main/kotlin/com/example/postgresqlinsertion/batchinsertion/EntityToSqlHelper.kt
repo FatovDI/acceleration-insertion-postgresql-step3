@@ -16,10 +16,20 @@ fun getStringDataFromEntity(entity: BaseEntity) =
     getDataFromEntity(entity).map { it?.toString() }
 
 fun getDataFromEntity(entity: BaseEntity) =
-    entity.javaClass.declaredFields.map { field ->
+    getAllFields(entity.javaClass).map { field ->
         field.trySetAccessible()
         getDataFromEntityByField(entity, field)
     }
+
+fun getAllFields(clazz: Class<*>?): List<Field> {
+    if (clazz == null) {
+        return emptyList()
+    }
+    return mutableListOf<Field>().apply {
+        addAll(getAllFields(clazz.superclass))
+        addAll(clazz.declaredFields.filter { it.name != "id" })
+    }
+}
 
 fun getDataFromEntityByField(entity: BaseEntity, field: Field) =
     when (val obj = field.get(entity)) {
@@ -48,10 +58,10 @@ fun getTableName(clazz: KClass<*>): String {
 }
 
 fun getColumnsStringByClass(clazz: KClass<out BaseEntity>) =
-    clazz.java.declaredFields.joinToString(",") { getColumnName(it) }
+    getAllFields(clazz.java).joinToString(",") { getColumnName(it) }
 
 fun getColumnsByClass(clazz: KClass<out BaseEntity>) =
-    clazz.java.declaredFields.map { getColumnName(it) }
+    getAllFields(clazz.java).map { getColumnName(it) }
 
 fun getColumnsString(columns: Set<KProperty1<*, *>>) =
     columns.joinToString(",") { getColumnName(it.javaField) }

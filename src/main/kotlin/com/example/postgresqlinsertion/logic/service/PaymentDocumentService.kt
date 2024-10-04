@@ -5,6 +5,7 @@ import com.example.postgresqlinsertion.batchinsertion.api.factory.BatchInsertion
 import com.example.postgresqlinsertion.batchinsertion.api.factory.BatchInsertionByPropertyFactory
 import com.example.postgresqlinsertion.batchinsertion.api.factory.SaverType
 import com.example.postgresqlinsertion.batchinsertion.api.processor.BatchInsertionByPropertyProcessor
+import com.example.postgresqlinsertion.batchinsertion.getAllFields
 import com.example.postgresqlinsertion.batchinsertion.getColumnsString
 import com.example.postgresqlinsertion.batchinsertion.getColumnsStringByClass
 import com.example.postgresqlinsertion.batchinsertion.utils.getRandomString
@@ -657,7 +658,7 @@ class PaymentDocumentService(
 
         log.info("start save by namedJdbcTemplate $count")
 
-        val columns = PaymentDocumentEntity::class.java.declaredFields.joinToString(",") { ":${it.name}" }
+        val columns = getAllFields(PaymentDocumentEntity::class.java).joinToString(",") { ":${it.name}" }
 
         // todo разобраться почему не работает с PaymentDocumentEntity.
         val batch = mutableListOf<PaymentDocumentEntity>()
