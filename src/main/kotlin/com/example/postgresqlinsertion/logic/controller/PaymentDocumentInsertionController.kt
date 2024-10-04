@@ -170,10 +170,11 @@ class PaymentDocumentInsertionController(
     @PostMapping("/insert-prepared-statement/{count}")
     fun insertViaInsertWithPreparedStatement(
         @PathVariable count: Int,
-        @RequestParam orderNumber: String? = null
+        @RequestParam orderNumber: String? = null,
+        @RequestParam transactionId: UUID? = null
     ): ResponseDto {
         val time = measureTimeMillis {
-            service.saveByInsertWithPreparedStatement(count, orderNumber)
+            service.saveByInsertWithPreparedStatement(count, orderNumber, transactionId)
         }
         return ResponseDto(
             name = "Insert method with prepared statement",
@@ -404,7 +405,7 @@ class PaymentDocumentInsertionController(
 //        val transactionId = sqlHelper.nextIdList(1).first()
 //        val transactionId = sqlHelper.nextTransactionId()
         val transactionId = UUID.randomUUID()
-        service.saveByCopyViaFile(count, transactionId)
+        service.saveByInsertWithPreparedStatement(count, null, transactionId)
         val time = measureTimeMillis {
             countUpd = service.setReadyToReadByTransactionId(transactionId)
         }
