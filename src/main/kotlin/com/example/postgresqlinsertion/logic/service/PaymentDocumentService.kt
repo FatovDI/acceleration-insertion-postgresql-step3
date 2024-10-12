@@ -62,7 +62,7 @@ class PaymentDocumentService(
 
         log.info("start save $count by PG query with app loop")
         val data = (1..batchSize).map { s ->
-            "(('{1000004,1000005,1000006,1000007,1000008}'::bigint[])[ceil(random()*5)], '22.22', true, ('{RUB,USD,CHY,EUR}'::text[])[ceil(random()*4)], '2024-10-11', substr(md5(random()::text), 1, 10), substr(md5(random()::text), 1, 100), substr(md5(random()::text), 1, 10), substr(md5(random()::text), 1, 15), substr(md5(random()::text), 1, 20), false, 'c2cfa59d-69cc-43b3-a749-c3c44dd04765'::uuid)${if (s == batchSize) ";" else ","}"
+            "(('{1000004,1000005,1000006,1000007,1000008}'::bigint[])[ceil(random()*5)], '22.22', true, ('{RUB,USD,CHY,EUR}'::text[])[ceil(random()*4)], '2024-10-11', substr(md5(random()::text), 1, 10), substr(md5(random()::text), 1, 100), substr(md5(random()::text), 1, 10), substr(md5(random()::text), 1, 15), substr(md5(random()::text), 1, 20), false, '$transactionId'::uuid)${if (s == batchSize) ";" else ","}"
         }.joinToString("\n")
 
         (1..count/batchSize).forEach {
