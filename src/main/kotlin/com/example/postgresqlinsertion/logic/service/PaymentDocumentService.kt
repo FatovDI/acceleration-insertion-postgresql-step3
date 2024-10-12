@@ -56,6 +56,52 @@ class PaymentDocumentService(
 
     private val log by logger()
 
+    fun saveByPGQueryWithAppLoop(count: Int, transactionId: UUID) {
+
+        val conn = dataSource.connection
+
+        log.info("start save $count by PG query with app loop")
+        (1..count).forEach {
+            conn.prepareStatement("""
+            DO ${'$'}${'$'}
+                BEGIN
+                   INSERT INTO payment_document (account_id, amount, expense, cur, order_date, order_number, payment_purpose, prop_10,
+                                                 prop_15, prop_20, ready_to_read, transaction_id)
+                   VALUES (('{1000004,1000005,1000006,1000007,1000008}'::bigint[])[ceil(random()*5)], '22.22', true, ('{RUB,USD,CHY,EUR}'::text[])[ceil(random()*4)], '2024-10-11', substr(md5(random()::text), 1, 10), substr(md5(random()::text), 1, 100), substr(md5(random()::text), 1, 10), substr(md5(random()::text), 1, 15), substr(md5(random()::text), 1, 20), false, '${transactionId.toString()}'::uuid);
+                END;
+            ${'$'}${'$'};
+            """.trimIndent()
+            ).use { stmnt ->
+                stmnt.execute()
+            }
+        }
+        log.info("end save $count by PG query with app loop")
+
+        conn.close()
+    }
+
+    fun saveByPGQuery(count: Int, transactionId: UUID) {
+
+        log.info("start save $count by PG query")
+        dataSource.connection.prepareStatement(
+            """
+            DO ${'$'}${'$'}
+                BEGIN
+                    FOR i IN 1..$count
+                        LOOP
+                            INSERT INTO payment_document (account_id, amount, expense, cur, order_date, order_number, payment_purpose, prop_10,
+                                                          prop_15, prop_20, ready_to_read, transaction_id)
+                            VALUES (('{1000004,1000005,1000006,1000007,1000008}'::bigint[])[ceil(random()*5)], '22.22', true, ('{RUB,USD,CHY,EUR}'::text[])[ceil(random()*4)], '2024-10-11', substr(md5(random()::text), 1, 10), substr(md5(random()::text), 1, 100), substr(md5(random()::text), 1, 10), substr(md5(random()::text), 1, 15), substr(md5(random()::text), 1, 20), false, '${transactionId.toString()}'::uuid);
+                        END LOOP;
+                END;
+            ${'$'}${'$'};
+            """.trimIndent()
+        ).use { stmnt ->
+            stmnt.execute()
+        }
+        log.info("end save $count by PG query")
+    }
+
     fun saveBySpringConcurrent(count: Int, transactionId: UUID? = null) {
         val currencies = currencyRepo.findAll()
         val accounts = accountRepo.findAll()

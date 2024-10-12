@@ -15,6 +15,36 @@ class PaymentDocumentInsertionController(
     val sqlHelper: SqlHelper
 ) {
 
+    @PostMapping("/insert-by-pg-query-with-app-loop/{count}")
+    fun insertByPGQueryWithAppLoop(
+        @PathVariable count: Int,
+        @RequestParam transactionId: UUID
+    ): ResponseDto {
+        val time = measureTimeMillis {
+            service.saveByPGQueryWithAppLoop(count, transactionId)
+        }
+        return ResponseDto(
+            name = "Save by PG query with app loop",
+            count = count,
+            time = getTimeString(time)
+        )
+    }
+
+    @PostMapping("/insert-by-pg-query/{count}")
+    fun insertByPGQuery(
+        @PathVariable count: Int,
+        @RequestParam transactionId: UUID
+    ): ResponseDto {
+        val time = measureTimeMillis {
+            service.saveByPGQuery(count, transactionId)
+        }
+        return ResponseDto(
+            name = "Save by PG query",
+            count = count,
+            time = getTimeString(time)
+        )
+    }
+
     @PostMapping("/insert-by-spring-with-async/{count}")
     fun insertBySpringWithAsync(
         @PathVariable count: Int,
