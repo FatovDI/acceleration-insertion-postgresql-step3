@@ -27,10 +27,19 @@ class PaymentDocumentSaver(
 
     private val jdbcTemplate = JdbcTemplate(dataSource)
 
-    fun setReadyToRead(transactionId: UUID): Int {
+    fun removeTransactionId(transactionId: UUID): Int {
         return jdbcTemplate.update(
             """
                 update payment_document set transaction_id = null where transaction_id = ?
+            """.trimIndent()) {  ps ->
+            ps.setObject(1, transactionId)
+        }
+    }
+
+    fun setReadyToRead(transactionId: UUID): Int {
+        return jdbcTemplate.update(
+            """
+                update payment_document set ready_to_read = true where transaction_id = ?
             """.trimIndent()) {  ps ->
             ps.setObject(1, transactionId)
         }
