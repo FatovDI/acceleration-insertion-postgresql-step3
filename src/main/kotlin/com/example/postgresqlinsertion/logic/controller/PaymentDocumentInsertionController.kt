@@ -51,7 +51,20 @@ class PaymentDocumentInsertionController(
         @RequestParam transactionId: UUID? = null
     ): ResponseDto {
         val time = measureTimeMillis {
-            service.saveBySpringConcurrent(count, transactionId)
+            service.saveBySpringConcurrentWithTransactionId(count, transactionId)
+        }
+        return ResponseDto(
+            name = "Save by spring with async",
+            count = count,
+            time = getTimeString(time)
+        )
+    }
+
+
+    @PostMapping("/save-by-spring-with-async/{count}")
+    fun saveBySpringWithAsync(@PathVariable count: Int): ResponseDto {
+        val time = measureTimeMillis {
+            service.saveBySpringConcurrent(count)
         }
         return ResponseDto(
             name = "Save by spring with async",
@@ -435,7 +448,7 @@ class PaymentDocumentInsertionController(
 //        val transactionId = sqlHelper.nextIdList(1).first()
 //        val transactionId = sqlHelper.nextTransactionId()
         val transactionId = UUID.randomUUID()
-        service.saveBySpringConcurrent(count, transactionId)
+        service.saveBySpringConcurrentWithTransactionId(count, transactionId)
         val time = measureTimeMillis {
             countUpd = service.setReadyToReadByTransactionId(transactionId)
         }

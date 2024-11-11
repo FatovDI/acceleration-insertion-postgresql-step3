@@ -102,7 +102,22 @@ class PaymentDocumentService(
         log.info("end save $count by PG query")
     }
 
-    fun saveBySpringConcurrent(count: Int, transactionId: UUID? = null) {
+    fun saveBySpringConcurrent(count: Int) {
+        val currencies = currencyRepo.findAll()
+        val accounts = accountRepo.findAll()
+
+        var listForSave = mutableListOf<PaymentDocumentEntity>()
+        for (i in 0 until count) {
+            listForSave.add(getRandomEntity(null, currencies.random(), accounts.random()))
+            if (i != 0 && i % batchSize == 0) {
+                saver.saveBatchAsync(listForSave)
+                listForSave = mutableListOf()
+            }
+        }
+        listForSave.takeIf { it.isNotEmpty() }?.let { saver.saveBatchAsync(it) }
+    }
+
+    fun saveBySpringConcurrentWithTransactionId(count: Int, transactionId: UUID? = null) {
         val currencies = currencyRepo.findAll()
         val accounts = accountRepo.findAll()
 
@@ -776,6 +791,44 @@ class PaymentDocumentService(
         val listId = sqlHelper.getIdListForSetReadyToRead(count, PaymentDocumentEntity::class)
         log.info("start set ready to read with array $count")
         return saver.setReadyToReadArray(listId)
+    }
+
+    fun saveByConcurrentAtomic(count: Int): Int {
+        val currencies = currencyRepo.findAll()
+        val accounts = accountRepo.findAll()
+
+        log.info("start save $count by Spring with async")
+
+        val listForSave = mutableListOf<PaymentDocumentEntity>()
+        val transactionId = UUID.randomUUID()
+        for (i in 0 until count) {
+            listForSave.add(
+                getRandomEntity(null, currencies.random(), accounts.random(), null, transactionId)
+            )
+        }
+        listForSave.chunked(batchSize).map { saver.saveBatchAsync(it) }.flatMap { it.get() }
+
+        return saver.removeTransactionId(transactionId)
+
+    }
+
+    fun saveByConcurrentAtomicWithReadyToRead(count: Int): Int {
+        val currencies = currencyRepo.findAll()
+        val accounts = accountRepo.findAll()
+
+        log.info("start save $count by Spring with async")
+
+        val listForSave = mutableListOf<PaymentDocumentEntity>()
+        val transactionId = UUID.randomUUID()
+        for (i in 0 until count) {
+            listForSave.add(
+                getRandomEntity(null, currencies.random(), accounts.random(), null, transactionId)
+                    .apply { readyToRead = false }
+            )
+        }
+        listForSave.chunked(batchSize).map { saver.saveBatchAsync(it) }.flatMap { it.get() }
+        return saver.setReadyToRead(transactionId)
+
     }
 
     fun setReadyToReadByTransactionId(transactionId: UUID): Int {
