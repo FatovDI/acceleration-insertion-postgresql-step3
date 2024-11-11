@@ -107,14 +107,16 @@ class PaymentDocumentService(
         val accounts = accountRepo.findAll()
 
         var listForSave = mutableListOf<PaymentDocumentEntity>()
-        for (i in 0 until count) {
+        val saveTasks = mutableListOf<Future<List<PaymentDocumentEntity>>>()
+        (1..count).forEach {
             listForSave.add(getRandomEntity(null, currencies.random(), accounts.random()))
-            if (i != 0 && i % batchSize == 0) {
-                saver.saveBatchAsync(listForSave)
+            if (it != 0 && it % batchSize == 0) {
+                saveTasks.add(saver.saveBatchAsync(listForSave))
                 listForSave = mutableListOf()
             }
         }
-        listForSave.takeIf { it.isNotEmpty() }?.let { saver.saveBatchAsync(it) }
+        listForSave.takeIf { it.isNotEmpty() }?.let { saveTasks.add(saver.saveBatchAsync(it)) }
+        saveTasks.forEach { it.get() }
     }
 
     fun saveBySpringConcurrentWithTransactionId(count: Int, transactionId: UUID? = null) {
