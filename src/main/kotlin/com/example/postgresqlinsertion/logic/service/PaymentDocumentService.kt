@@ -102,7 +102,7 @@ class PaymentDocumentService(
         log.info("end save $count by PG query")
     }
 
-    fun saveBySpringConcurrent(count: Int) {
+    fun saveBySpringConcurrent(count: Int): List<Long> {
         val currencies = currencyRepo.findAll()
         val accounts = accountRepo.findAll()
 
@@ -116,7 +116,7 @@ class PaymentDocumentService(
             }
         }
         listForSave.takeIf { it.isNotEmpty() }?.let { saveTasks.add(saver.saveBatchAsync(it)) }
-        saveTasks.forEach { it.get() }
+        return saveTasks.flatMap { it.get().mapNotNull { pd -> pd.id } }
     }
 
     fun saveBySpringConcurrentWithTransactionId(count: Int, transactionId: UUID? = null) {
@@ -126,8 +126,8 @@ class PaymentDocumentService(
         log.info("start save $count by Spring with async")
         val listForSave = mutableListOf<PaymentDocumentEntity>()
         for (i in 0 until count) {
-            listForSave.add(getRandomEntity(null, currencies.random(), accounts.random(), null, transactionId))
-//            listForSave.add(getRandomEntity(null, currencies.random(), accounts.random(), null, transactionId).apply { readyToRead = false })
+//            listForSave.add(getRandomEntity(null, currencies.random(), accounts.random(), null, transactionId))
+            listForSave.add(getRandomEntity(null, currencies.random(), accounts.random(), null, transactionId).apply { readyToRead = false })
         }
         listForSave.chunked(batchSize).map { saver.saveBatchAsync(it) }.flatMap { it.get() }
         log.info("end save $count by Spring with async")
@@ -781,16 +781,16 @@ class PaymentDocumentService(
         return saver.setReadyToRead(listId).sumOf { it.sum() }
     }
 
-    fun setReadyToReadUnnest(count: Int): Int {
+    fun setReadyToReadUnnest(count: Int, ids: List<Long>? = null): Int {
         log.info("get list id for set ready to read with unnest $count")
-        val listId = sqlHelper.getIdListForSetReadyToRead(count, PaymentDocumentEntity::class)
+        val listId = ids ?: sqlHelper.getIdListForSetReadyToRead(count, PaymentDocumentEntity::class)
         log.info("start set ready to read with unnest $count")
         return saver.setReadyToReadUnnest(listId)
     }
 
-    fun setReadyToReadArray(count: Int): Int {
+    fun setReadyToReadArray(count: Int, ids: List<Long>? = null): Int {
         log.info("get list id for set ready to read with array $count")
-        val listId = sqlHelper.getIdListForSetReadyToRead(count, PaymentDocumentEntity::class)
+        val listId = ids ?: sqlHelper.getIdListForSetReadyToRead(count, PaymentDocumentEntity::class)
         log.info("start set ready to read with array $count")
         return saver.setReadyToReadArray(listId)
     }
