@@ -9,7 +9,6 @@ import javax.persistence.*
 @Where(clause = "ready_to_read = true")
 abstract class BaseAsyncInsertEntity : BaseEntity() {
 
-    @Transient //todo uncomment if needs to measurement only ready to read.
     var transactionId: UUID? = null
     var readyToRead: Boolean = true
 
