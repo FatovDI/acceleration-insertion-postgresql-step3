@@ -119,6 +119,50 @@ class PaymentDocumentService(
         return saveTasks.flatMap { it.get().mapNotNull { pd -> pd.id } }
     }
 
+    fun saveBySpringConcurrentAtomic(count: Int): Int {
+        val currencies = currencyRepo.findAll()
+        val accounts = accountRepo.findAll()
+
+        var listForSave = mutableListOf<PaymentDocumentEntity>()
+        val saveTasks = mutableListOf<Future<List<PaymentDocumentEntity>>>()
+        (1..count).forEach {
+            listForSave.add(getRandomEntity(null, currencies.random(), accounts.random()).apply { readyToRead = false })
+            if (it != 0 && it % batchSize == 0) {
+                saveTasks.add(saver.saveBatchAsync(listForSave))
+                listForSave = mutableListOf()
+            }
+        }
+        listForSave.takeIf { it.isNotEmpty() }?.let { saveTasks.add(saver.saveBatchAsync(it)) }
+
+        val ids = saveTasks.flatMap { it.get().mapNotNull { pd -> pd.id } }
+        return saver.setReadyToReadArray(ids)
+    }
+
+    fun saveBySpringConcurrentWithTransactionIdAtomic(count: Int): Int {
+        val currencies = currencyRepo.findAll()
+        val accounts = accountRepo.findAll()
+
+        var listForSave = mutableListOf<PaymentDocumentEntity>()
+        val saveTasks = mutableListOf<Future<List<PaymentDocumentEntity>>>()
+        val transactionId = UUID.randomUUID()
+        (1..count).forEach {
+            listForSave
+                .apply {
+                    add(getRandomEntity(null, currencies.random(), accounts.random(), null, transactionId)
+                        .apply { readyToRead = false })
+                }
+                .takeIf { _ -> it != 0 && it % batchSize == 0 }
+                ?.let {
+                    saveTasks.add(saver.saveBatchAsync(it))
+                    listForSave = mutableListOf()
+                }
+        }
+        listForSave.takeIf { it.isNotEmpty() }?.let { saveTasks.add(saver.saveBatchAsync(it)) }
+
+        saveTasks.flatMap { it.get() }
+        return saver.setReadyToRead(transactionId)
+    }
+
     fun saveBySpringConcurrentWithTransactionId(count: Int, transactionId: UUID? = null) {
         val currencies = currencyRepo.findAll()
         val accounts = accountRepo.findAll()

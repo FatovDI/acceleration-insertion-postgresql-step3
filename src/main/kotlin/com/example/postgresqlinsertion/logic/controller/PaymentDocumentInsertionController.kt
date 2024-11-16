@@ -473,6 +473,32 @@ class PaymentDocumentInsertionController(
         )
     }
 
+    @PostMapping("/save-concurrent-and-atomic/{count}")
+    fun saveBySpringConcurrentAndAtomic(@PathVariable count: Int): ResponseDto {
+        var countUpd: Int
+        val time = measureTimeMillis {
+            countUpd = service.saveBySpringConcurrentAtomic(count)
+        }
+        return ResponseDto(
+            name = "save concurrent and atomic",
+            count = countUpd,
+            time = getTimeString(time)
+        )
+    }
+
+    @PostMapping("/save-concurrent-and-atomic-by-transaction-id/{count}")
+    fun saveBySpringConcurrentAndAtomicByTransactionId(@PathVariable count: Int): ResponseDto {
+        var countUpd: Int
+        val time = measureTimeMillis {
+            countUpd = service.saveBySpringConcurrentWithTransactionIdAtomic(count)
+        }
+        return ResponseDto(
+            name = "save concurrent and atomic by transaction ID",
+            count = countUpd,
+            time = getTimeString(time)
+        )
+    }
+
     @PostMapping("/insert-with-drop-index/{count}")
     fun insertViaInsertWithDropIndex(@PathVariable count: Int): ResponseDto {
         val time = measureTimeMillis {
