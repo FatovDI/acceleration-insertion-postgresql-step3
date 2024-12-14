@@ -1,7 +1,9 @@
 package com.example.postgresqlinsertion.logic.service
 
 import com.example.postgresqlinsertion.batchinsertion.api.SqlHelper
+import com.example.postgresqlinsertion.logic.entity.PaymentDocumentActiveTransactionEntity
 import com.example.postgresqlinsertion.logic.entity.PaymentDocumentEntity
+import com.example.postgresqlinsertion.logic.repository.PaymentDocumentActiveTransactionRepository
 import com.example.postgresqlinsertion.logic.repository.PaymentDocumentRepository
 import org.hibernate.SessionFactory
 import org.springframework.beans.factory.annotation.Value
@@ -9,7 +11,8 @@ import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.scheduling.annotation.Async
 import org.springframework.scheduling.annotation.AsyncResult
 import org.springframework.stereotype.Component
-import java.util.UUID
+import java.util.*
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
 import javax.sql.DataSource
 import javax.transaction.Transactional
@@ -17,6 +20,7 @@ import javax.transaction.Transactional
 @Component
 class PaymentDocumentSaver(
     val paymentDocumentRepository: PaymentDocumentRepository,
+    val activeTransactionRepository: PaymentDocumentActiveTransactionRepository,
     val sessionFactory: SessionFactory,
     val dataSource: DataSource,
     val sqlHelper: SqlHelper
@@ -39,7 +43,9 @@ class PaymentDocumentSaver(
     fun setReadyToRead(transactionId: UUID): Int {
         return jdbcTemplate.update(
             """
-                update payment_document set ready_to_read = true where transaction_id = ?
+                update payment_document 
+                    set ready_to_read = true 
+                where transaction_id = ?
             """.trimIndent()) {  ps ->
             ps.setObject(1, transactionId)
         }
@@ -58,7 +64,9 @@ class PaymentDocumentSaver(
     fun setReadyToReadArray(idList: List<Long>): Int {
         return jdbcTemplate.update(
             """
-                update payment_document set ready_to_read = true where id = any (?)
+                update payment_document 
+                    set ready_to_read = true 
+                where id = any (?)
             """.trimIndent()) {  ps ->
             ps.setObject(1, idList.toTypedArray())
         }
@@ -77,6 +85,17 @@ class PaymentDocumentSaver(
     fun saveBatchAsync(entities: List<PaymentDocumentEntity>): Future<List<PaymentDocumentEntity>> {
         val savedEntities = paymentDocumentRepository.saveAll(entities)
         return AsyncResult(savedEntities)
+    }
+
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    @Async("threadPoolAsyncInsertExecutor")
+    fun saveBatchAsync(entities: List<PaymentDocumentEntity>, transactionId: UUID): Future<List<PaymentDocumentEntity>> {
+        val savedEntities = entities
+            .map { PaymentDocumentActiveTransactionEntity(paymentDocument = it, transactionId = transactionId) }
+            .let { activeTransactionRepository.saveAll(it) }
+            .mapNotNull { it.paymentDocument }
+
+        return CompletableFuture.completedFuture(savedEntities)
     }
 
     @Transactional(Transactional.TxType.REQUIRES_NEW)

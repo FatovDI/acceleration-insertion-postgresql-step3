@@ -499,6 +499,19 @@ class PaymentDocumentInsertionController(
         )
     }
 
+    @PostMapping("/save-concurrent-and-atomic-by-transaction-id-another-table/{count}")
+    fun saveBySpringConcurrentAndAtomicByTransactionIdAnotherTable(@PathVariable count: Int): ResponseDto {
+        var countUpd: Int
+        val time = measureTimeMillis {
+            countUpd = service.saveByConcurrentAtomicWithTransactionIdInAnotherTable(count)
+        }
+        return ResponseDto(
+            name = "save concurrent and atomic by transaction ID in another table",
+            count = countUpd,
+            time = getTimeString(time)
+        )
+    }
+
     @PostMapping("/insert-with-drop-index/{count}")
     fun insertViaInsertWithDropIndex(@PathVariable count: Int): ResponseDto {
         val time = measureTimeMillis {

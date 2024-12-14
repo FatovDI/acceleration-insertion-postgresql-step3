@@ -1,11 +1,13 @@
 package com.example.postgresqlinsertion.logic.entity
 
+import org.hibernate.annotations.Where
 import java.math.BigDecimal
 import java.time.LocalDate
 import javax.persistence.*
 
 @Entity
 @Table(name = "payment_document")
+@Where(clause = "id not in (select id from active_transaction)")
 class PaymentDocumentEntity(
     var orderDate: LocalDate? = null,
     var orderNumber: String? = null,
@@ -24,4 +26,4 @@ class PaymentDocumentEntity(
     var prop15: String? = null,
     @Column(name = "prop_20")
     var prop20: String? = null,
-) : BaseAsyncInsertEntity()
+) : BaseEntity()
