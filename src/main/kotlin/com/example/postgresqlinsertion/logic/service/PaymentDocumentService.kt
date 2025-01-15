@@ -49,6 +49,7 @@ class PaymentDocumentService(
     private val dataSource: DataSource,
     private val asyncRepo: PaymentDocumentAsyncInsertRepository,
     private val saver: PaymentDocumentSaver,
+    private val activeTransactionRepository: PaymentDocumentActiveTransactionRepository,
 ) {
 
     @PersistenceContext
@@ -181,9 +182,9 @@ class PaymentDocumentService(
         }
         listForSave.takeIf { it.isNotEmpty() }?.let { saveTasks.add(saver.saveBatchAsync(it, transactionId)) }
 
-        saveTasks.flatMap { it.get() }
-        return saveTasks.size
-//        return saver.setReadyToRead(transactionId)
+        val docs = saveTasks.flatMap { it.get() }
+        activeTransactionRepository.deleteAllByTransactionId(transactionId)
+        return docs.size
     }
 
     fun saveBySpringConcurrentWithTransactionId(count: Int, transactionId: UUID? = null) {
