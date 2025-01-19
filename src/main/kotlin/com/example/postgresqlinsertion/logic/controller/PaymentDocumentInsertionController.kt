@@ -493,7 +493,7 @@ class PaymentDocumentInsertionController(
             countUpd = service.saveBySpringConcurrentWithTransactionIdAtomic(count)
         }
         return ResponseDto(
-            name = "save concurrent and atomic by transaction ID",
+            name = "save concurrent and atomic by tr. ID",
             count = countUpd,
             time = getTimeString(time)
         )
@@ -506,7 +506,7 @@ class PaymentDocumentInsertionController(
             countUpd = service.saveByConcurrentAtomicWithTransactionIdInAnotherTable(count)
         }
         return ResponseDto(
-            name = "save concurrent and atomic by transaction ID in another table",
+            name = "save concurrent and atomic by tr. ID in another table",
             count = countUpd,
             time = getTimeString(time)
         )

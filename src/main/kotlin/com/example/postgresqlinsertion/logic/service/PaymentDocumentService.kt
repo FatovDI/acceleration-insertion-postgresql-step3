@@ -151,7 +151,7 @@ class PaymentDocumentService(
         (1..count).forEach {
             listForSave.add(
                 getRandomEntity(null, currencies.random(), accounts.random(), transactionId)
-//                    .apply { readyToRead = false }
+                    .apply { readyToRead = false }
             )
             if (it != 0 && it % batchSize == 0) {
                 saveTasks.add(saver.saveBatchAsync(listForSave))
@@ -952,7 +952,7 @@ class PaymentDocumentService(
             prop20 = getRandomString(20),
         )
             .apply { this.id = id }
-//            .apply { this.transactionId = transactionId }
+            .apply { this.transactionId = transactionId }
 //            .apply { this.readyToRead = transactionId?.let { false }?: true }
     }
 

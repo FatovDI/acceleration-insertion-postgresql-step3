@@ -89,9 +89,17 @@ class PaymentDocumentSaver(
 
     @Transactional(Transactional.TxType.REQUIRES_NEW)
     @Async("threadPoolAsyncInsertExecutor")
-    fun saveBatchAsync(entities: List<PaymentDocumentEntity>, transactionId: UUID): Future<List<PaymentDocumentEntity>> {
+    fun saveBatchAsync(
+        entities: List<PaymentDocumentEntity>,
+        transactionId: UUID
+    ): Future<List<PaymentDocumentEntity>> {
         val savedEntities = entities
-            .map { PaymentDocumentActiveTransactionEntity(paymentDocument = it, transactionId = transactionId) }
+            .map {
+                PaymentDocumentActiveTransactionEntity(
+                    paymentDocument = it,
+                    transactionId = transactionId
+                )
+            }
             .let { activeTransactionRepository.saveAll(it) }
             .mapNotNull { it.paymentDocument }
 
