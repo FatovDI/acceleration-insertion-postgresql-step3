@@ -853,7 +853,7 @@ class PaymentDocumentService(
         for (i in 0 until count) {
             listForSave.add(getRandomEntity(listId[i], currencies.random(), accounts.random()))
         }
-        saver.saveBatchBySession(listForSave)
+        saver.batchUpdateBySession(listForSave)
     }
 
     fun setReadyToRead(count: Int): Int {

@@ -15,7 +15,6 @@ import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
 import javax.sql.DataSource
-import javax.transaction.Transactional
 
 @Component
 class PaymentDocumentSaver(
@@ -43,9 +42,7 @@ class PaymentDocumentSaver(
     fun setReadyToRead(transactionId: UUID): Int {
         return jdbcTemplate.update(
             """
-                update payment_document 
-                    set ready_to_read = true 
-                where transaction_id = ?
+                update payment_document set ready_to_read = true  where transaction_id = ?
             """.trimIndent()) {  ps ->
             ps.setObject(1, transactionId)
         }
@@ -80,14 +77,12 @@ class PaymentDocumentSaver(
         }
     }
 
-    @Transactional(Transactional.TxType.REQUIRES_NEW)
     @Async("threadPoolAsyncInsertExecutor")
     fun saveBatchAsync(entities: List<PaymentDocumentEntity>): Future<List<PaymentDocumentEntity>> {
         val savedEntities = paymentDocumentRepository.saveAll(entities)
-        return AsyncResult(savedEntities)
+        return CompletableFuture.completedFuture(savedEntities)
     }
 
-    @Transactional(Transactional.TxType.REQUIRES_NEW)
     @Async("threadPoolAsyncInsertExecutor")
     fun saveBatchAsync(
         entities: List<PaymentDocumentEntity>,
@@ -106,7 +101,6 @@ class PaymentDocumentSaver(
         return CompletableFuture.completedFuture(savedEntities)
     }
 
-    @Transactional(Transactional.TxType.REQUIRES_NEW)
     @Async("threadPoolAsyncInsertExecutor")
     fun setTransactionIdAsync(ids: List<Long>): Future<Array<IntArray>> {
         return AsyncResult(setTransactionId(ids))
@@ -127,13 +121,13 @@ class PaymentDocumentSaver(
 
     @Async("threadPoolAsyncInsertExecutor")
     fun saveBatchBySessionAsync(entities: List<PaymentDocumentEntity>): Future<List<PaymentDocumentEntity>> {
-        return AsyncResult(saveBatchBySession(entities))
+        return AsyncResult(batchUpdateBySession(entities))
     }
 
-    fun saveBatchBySession(entities: List<PaymentDocumentEntity>): List<PaymentDocumentEntity> {
-        sessionFactory.openSession().use { session ->
+    fun batchUpdateBySession(entities: List<PaymentDocumentEntity>): List<PaymentDocumentEntity> {
+        sessionFactory.openStatelessSession().use { session ->
             val transaction = session.beginTransaction()
-            entities.forEach { session.saveOrUpdate(it) }
+            entities.forEach { session.update(it) }
             transaction.commit()
         }
         return entities
