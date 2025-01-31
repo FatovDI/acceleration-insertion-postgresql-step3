@@ -4,6 +4,7 @@ import com.example.postgresqlinsertion.batchinsertion.impl.SqlHelper
 import com.example.postgresqlinsertion.batchinsertion.utils.getRandomString
 import com.example.postgresqlinsertion.logic.dto.ResponseDto
 import com.example.postgresqlinsertion.logic.service.PaymentDocumentService
+import com.fasterxml.uuid.Generators
 import org.springframework.web.bind.annotation.*
 import java.util.UUID
 import kotlin.system.measureTimeMillis
@@ -451,6 +452,21 @@ class PaymentDocumentInsertionController(
         service.saveBySpringConcurrentWithTransactionId(count, transactionId)
         val time = measureTimeMillis {
             countUpd = service.setReadyToReadByTransactionId(transactionId)
+        }
+        return ResponseDto(
+            name = "Set ready to read after insert",
+            count = countUpd,
+            time = getTimeString(time)
+        )
+    }
+
+    @PostMapping("/remove-transaction-id-after-insert/{count}")
+    fun sremoveTransactionIdAfterInsert(@PathVariable count: Int): ResponseDto {
+        var countUpd: Int
+        val transactionId = Generators.timeBasedEpochGenerator().generate()
+        service.saveBySpringConcurrentWithTransactionId(count, transactionId)
+        val time = measureTimeMillis {
+            countUpd = service.removeTransactionId(transactionId)
         }
         return ResponseDto(
             name = "Set ready to read after insert",
