@@ -32,9 +32,8 @@ class PaymentDocumentSaver(
 
     fun removeTransactionId(transactionId: UUID): Int {
         return jdbcTemplate.update(
-            """
-                update payment_document set transaction_id = null where transaction_id = ?
-            """.trimIndent()) {  ps ->
+            "update payment_document set transaction_id = null where transaction_id = ?"
+        ) {  ps ->
             ps.setObject(1, transactionId)
         }
     }
@@ -60,11 +59,8 @@ class PaymentDocumentSaver(
 
     fun setReadyToReadArray(idList: List<Long>): Int {
         return jdbcTemplate.update(
-            """
-                update payment_document 
-                    set ready_to_read = true 
-                where id = any (?)
-            """.trimIndent()) {  ps ->
+            "update payment_document set ready_to_read = true where id = any (?)"
+        ) {  ps ->
             ps.setObject(1, idList.toTypedArray())
         }
     }

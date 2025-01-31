@@ -27,6 +27,7 @@ dependencies {
 	implementation("org.openjdk.jmh:jmh-core:1.36")
 	implementation("org.postgresql:postgresql:42.6.0")
 	implementation("org.hibernate:hibernate-jpamodelgen")
+	implementation("com.fasterxml.uuid:java-uuid-generator:5.1.0")
 
 	kapt("org.hibernate:hibernate-jpamodelgen")
 	kaptJmh("org.openjdk.jmh:jmh-generator-annprocess:1.36")

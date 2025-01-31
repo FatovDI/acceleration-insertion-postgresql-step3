@@ -14,6 +14,7 @@ import com.example.postgresqlinsertion.logic.entity.AccountEntity
 import com.example.postgresqlinsertion.logic.entity.CurrencyEntity
 import com.example.postgresqlinsertion.logic.entity.PaymentDocumentEntity
 import com.example.postgresqlinsertion.logic.repository.*
+import com.fasterxml.uuid.Generators
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
@@ -881,16 +882,20 @@ class PaymentDocumentService(
         val currencies = currencyRepo.findAll()
         val accounts = accountRepo.findAll()
 
-        log.info("start save $count by Spring with async")
-
-        val listForSave = mutableListOf<PaymentDocumentEntity>()
-        val transactionId = UUID.randomUUID()
-        for (i in 0 until count) {
+        var listForSave = mutableListOf<PaymentDocumentEntity>()
+        val saveTasks = mutableListOf<Future<List<PaymentDocumentEntity>>>()
+        val transactionId = Generators.timeBasedEpochGenerator().generate()
+        (1..count).forEach {
             listForSave.add(
-                getRandomEntity(null, currencies.random(), accounts.random(), transactionId, null)
+                getRandomEntity(null, currencies.random(), accounts.random(), transactionId)
             )
+            if (it != 0 && it % batchSize == 0) {
+                saveTasks.add(saver.saveBatchAsync(listForSave))
+                listForSave = mutableListOf()
+            }
         }
-        listForSave.chunked(batchSize).map { saver.saveBatchAsync(it) }.flatMap { it.get() }
+        listForSave.takeIf { it.isNotEmpty() }?.let { saveTasks.add(saver.saveBatchAsync(it)) }
+        saveTasks.flatMap { it.get() }
 
         return saver.removeTransactionId(transactionId)
 
@@ -917,6 +922,10 @@ class PaymentDocumentService(
 
     fun setReadyToReadByTransactionId(transactionId: UUID): Int {
         return saver.setReadyToRead(transactionId)
+    }
+
+    fun removeTransactionId(transactionId: UUID): Int {
+        return saver.removeTransactionId(transactionId)
     }
 
     fun setTransactionId(count: Int, countRow: Int = 4000000): Int {
