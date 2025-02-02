@@ -4,9 +4,9 @@ CREATE TABLE ACTIVE_TRANSACTION
     ID bigint NOT NULL DEFAULT nextval('seq_id'),
     transaction_id uuid NOT NULL
 );
+CREATE INDEX IX_ACTIVE_TRANSACTION_transaction_id on ACTIVE_TRANSACTION (transaction_id);
 
-
--- CREATE INDEX IX_ACTIVE_TRANSACTION_transaction_id on ACTIVE_TRANSACTION (transaction_id);CREATE TABLE ACTIVE_TRANSACTION
+-- CREATE TABLE ACTIVE_TRANSACTION
 -- (
 --     ID bigint NOT NULL,
 --     transaction_id uuid NOT NULL

@@ -91,12 +91,7 @@ class PaymentDocumentSaver(
 //        transactionId: UUID
 //    ): Future<List<PaymentDocumentEntity>> {
 //        val savedEntities = entities
-//            .map {
-//                PaymentDocumentActiveTransactionEntity(
-//                    paymentDocument = it,
-//                    transactionId = transactionId
-//                )
-//            }
+//            .map { PaymentDocumentActiveTransactionEntity(paymentDocument = it, transactionId = transactionId) }
 //            .let { activeTransactionRepository.saveAll(it) }
 //            .mapNotNull { it.paymentDocument }
 //

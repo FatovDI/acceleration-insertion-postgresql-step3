@@ -146,7 +146,7 @@ class PaymentDocumentService(
 
         var listForSave = mutableListOf<PaymentDocumentEntity>()
         val saveTasks = mutableListOf<Future<List<PaymentDocumentEntity>>>()
-        val transactionId = UUID.randomUUID()
+        val transactionId = Generators.timeBasedEpochGenerator().generate()
         (1..count).forEach {
             listForSave.add(
                 getRandomEntity(null, currencies.random(), accounts.random(), transactionId)
@@ -169,7 +169,7 @@ class PaymentDocumentService(
 
         var listForSave = mutableListOf<PaymentDocumentEntity>()
         val saveTasks = mutableListOf<Future<List<PaymentDocumentEntity>>>()
-        val transactionId = UUID.randomUUID()
+        val transactionId = Generators.timeBasedEpochGenerator().generate()
         (1..count).forEach {
             listForSave.add(
                 getRandomEntity(null, currencies.random(), accounts.random())
@@ -196,7 +196,7 @@ class PaymentDocumentService(
         activeTransactionRepository.saveAndFlush(PaymentDocumentActiveTransactionEntity(transactionId = transactionId))
         (1..count).forEach {
             listForSave.add(
-                getRandomEntity(null, currencies.random(), accounts.random())
+                getRandomEntity(null, currencies.random(), accounts.random(), transactionId)
             )
             if (it != 0 && it % batchSize == 0) {
                 saveTasks.add(saver.saveBatchAsync(listForSave))
@@ -930,7 +930,7 @@ class PaymentDocumentService(
         log.info("start save $count by Spring with async")
 
         val listForSave = mutableListOf<PaymentDocumentEntity>()
-        val transactionId = UUID.randomUUID()
+        val transactionId = Generators.timeBasedEpochGenerator().generate()
         for (i in 0 until count) {
             listForSave.add(
                 getRandomEntity(null, currencies.random(), accounts.random(), transactionId, null)
