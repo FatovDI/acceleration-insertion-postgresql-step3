@@ -10,9 +10,7 @@ import com.example.postgresqlinsertion.batchinsertion.getColumnsString
 import com.example.postgresqlinsertion.batchinsertion.getColumnsStringByClass
 import com.example.postgresqlinsertion.batchinsertion.utils.getRandomString
 import com.example.postgresqlinsertion.batchinsertion.utils.logger
-import com.example.postgresqlinsertion.logic.entity.AccountEntity
-import com.example.postgresqlinsertion.logic.entity.CurrencyEntity
-import com.example.postgresqlinsertion.logic.entity.PaymentDocumentEntity
+import com.example.postgresqlinsertion.logic.entity.*
 import com.example.postgresqlinsertion.logic.repository.*
 import com.fasterxml.uuid.Generators
 import org.springframework.beans.factory.annotation.Value
@@ -152,7 +150,7 @@ class PaymentDocumentService(
         (1..count).forEach {
             listForSave.add(
                 getRandomEntity(null, currencies.random(), accounts.random(), transactionId)
-                    .apply { readyToRead = false }
+//                    .apply { readyToRead = false }
             )
             if (it != 0 && it % batchSize == 0) {
                 saveTasks.add(saver.saveBatchAsync(listForSave))
@@ -182,6 +180,30 @@ class PaymentDocumentService(
             }
         }
         listForSave.takeIf { it.isNotEmpty() }?.let { saveTasks.add(saver.saveBatchAsync(it, transactionId)) }
+
+        val docs = saveTasks.flatMap { it.get() }
+        activeTransactionRepository.deleteAllByTransactionId(transactionId)
+        return docs.size
+    }
+
+    fun saveByConcurrentAtomicWithTransactionIdInTwoTable(count: Int): Int {
+        val currencies = currencyRepo.findAll()
+        val accounts = accountRepo.findAll()
+
+        var listForSave = mutableListOf<PaymentDocumentEntity>()
+        val saveTasks = mutableListOf<Future<List<PaymentDocumentEntity>>>()
+        val transactionId = Generators.timeBasedEpochGenerator().generate()
+        activeTransactionRepository.saveAndFlush(PaymentDocumentActiveTransactionEntity(transactionId = transactionId))
+        (1..count).forEach {
+            listForSave.add(
+                getRandomEntity(null, currencies.random(), accounts.random())
+            )
+            if (it != 0 && it % batchSize == 0) {
+                saveTasks.add(saver.saveBatchAsync(listForSave))
+                listForSave = mutableListOf()
+            }
+        }
+        listForSave.takeIf { it.isNotEmpty() }?.let { saveTasks.add(saver.saveBatchAsync(it)) }
 
         val docs = saveTasks.flatMap { it.get() }
         activeTransactionRepository.deleteAllByTransactionId(transactionId)

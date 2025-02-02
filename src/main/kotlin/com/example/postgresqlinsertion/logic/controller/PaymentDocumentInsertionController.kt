@@ -469,7 +469,7 @@ class PaymentDocumentInsertionController(
             countUpd = service.removeTransactionId(transactionId)
         }
         return ResponseDto(
-            name = "Set ready to read after insert",
+            name = "Remove transaction id after insert",
             count = countUpd,
             time = getTimeString(time)
         )
@@ -523,6 +523,19 @@ class PaymentDocumentInsertionController(
         }
         return ResponseDto(
             name = "save concurrent and atomic by tr. ID in another table",
+            count = countUpd,
+            time = getTimeString(time)
+        )
+    }
+
+    @PostMapping("/save-concurrent-and-atomic-by-transaction-id-two-table/{count}")
+    fun saveBySpringConcurrentAndAtomicByTransactionIdTwoTable(@PathVariable count: Int): ResponseDto {
+        var countUpd: Int
+        val time = measureTimeMillis {
+            countUpd = service.saveByConcurrentAtomicWithTransactionIdInTwoTable(count)
+        }
+        return ResponseDto(
+            name = "save concurrent and atomic by tr. ID in two table",
             count = countUpd,
             time = getTimeString(time)
         )

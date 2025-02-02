@@ -40,9 +40,7 @@ class PaymentDocumentSaver(
 
     fun setReadyToRead(transactionId: UUID): Int {
         return jdbcTemplate.update(
-            """
-                update payment_document set ready_to_read = true  where transaction_id = ?
-            """.trimIndent()) {  ps ->
+            "update payment_document set ready_to_read = true  where transaction_id = ?") {  ps ->
             ps.setObject(1, transactionId)
         }
     }
@@ -84,18 +82,26 @@ class PaymentDocumentSaver(
         entities: List<PaymentDocumentEntity>,
         transactionId: UUID
     ): Future<List<PaymentDocumentEntity>> {
-        val savedEntities = entities
-            .map {
-                PaymentDocumentActiveTransactionEntity(
-                    paymentDocument = it,
-                    transactionId = transactionId
-                )
-            }
-            .let { activeTransactionRepository.saveAll(it) }
-            .mapNotNull { it.paymentDocument }
-
+        val savedEntities = paymentDocumentRepository.saveAll(entities)
         return CompletableFuture.completedFuture(savedEntities)
     }
+//    @Async("threadPoolAsyncInsertExecutor")
+//    fun saveBatchAsync(
+//        entities: List<PaymentDocumentEntity>,
+//        transactionId: UUID
+//    ): Future<List<PaymentDocumentEntity>> {
+//        val savedEntities = entities
+//            .map {
+//                PaymentDocumentActiveTransactionEntity(
+//                    paymentDocument = it,
+//                    transactionId = transactionId
+//                )
+//            }
+//            .let { activeTransactionRepository.saveAll(it) }
+//            .mapNotNull { it.paymentDocument }
+//
+//        return CompletableFuture.completedFuture(savedEntities)
+//    }
 
     @Async("threadPoolAsyncInsertExecutor")
     fun setTransactionIdAsync(ids: List<Long>): Future<Array<IntArray>> {
