@@ -9,7 +9,7 @@ class SqlInterceptor: StatementInspector {
         return sql
             ?.takeIf { it.contains("#{active_transaction_condition}") }
             ?.let { s ->
-                val joinName = "join active_transaction\\s+(\\w+_\\d+_)".toRegex().findAll(s)
+                val joinName = "join active_transaction\\s+(\\w+)".toRegex().findAll(s)
                 var finallySql = s
                 joinName.forEach {
                     finallySql = s.replaceFirst(

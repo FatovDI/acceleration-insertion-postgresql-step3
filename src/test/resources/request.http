@@ -1,3 +1,67 @@
+POST http://localhost:8080/test-insertion/save-concurrent-and-atomic-by-transaction-id-two-table/20000
+Content-Type: application/json
+
+###
+POST http://localhost:8080/test-insertion/save-concurrent-and-atomic-by-transaction-id-another-table/20000
+Content-Type: application/json
+
+###
+POST http://localhost:8080/test-insertion/save-concurrent-and-atomic-by-transaction-id/20000
+Content-Type: application/json
+
+###
+POST http://localhost:8080/test-insertion/save-concurrent-and-atomic/20000
+Content-Type: application/json
+
+###
+POST http://localhost:8080/test-insertion/set-ready-to-read-array-after-insert/20000
+Content-Type: application/json
+
+###
+POST http://localhost:8080/test-insertion/set-ready-to-read-after-insert/20000
+Content-Type: application/json
+
+###
+POST http://localhost:8080/test-insertion/set-ready-to-read-by-kproperty/a833fee4-91b9-4804-ad58-c12377b218ef
+Content-Type: application/json
+
+###
+POST http://localhost:8080/test-insertion/set-ready-to-read-by-transaction-id/98f0cc67-5326-4eeb-9836-eecede946ccd
+Content-Type: application/json
+
+###
+POST http://localhost:8080/test-insertion/set-transaction-id/2?countRow=20000
+Content-Type: application/json
+
+###
+POST http://localhost:8080/test-insertion/set-ready-to-read-array/4
+Content-Type: application/json
+
+###
+POST http://localhost:8080/test-insertion/set-ready-to-read-unnest/8
+Content-Type: application/json
+
+###
+POST http://localhost:8080/test-insertion/set-ready-to-read/5
+Content-Type: application/json
+
+###
+POST http://localhost:8080/test-insertion/remove-transaction-id-after-insert/10
+Content-Type: application/json
+
+###
+POST http://localhost:8080/test-insertion/spring-update-by-session/10
+Content-Type: application/json
+
+###
+POST http://localhost:8080/test-insertion/insert-by-spring-with-async-and-session/20000
+Content-Type: application/json
+
+###
+POST http://localhost:8080/test-insertion/save-by-spring-with-async/20000
+Content-Type: application/json
+
+###
 POST http://localhost:8080/test-insertion/insert-by-spring-with-async/20000
 Content-Type: application/json
 
@@ -22,7 +86,7 @@ POST http://localhost:8080/test-insertion/copy-by-binary-and-property/200
 Content-Type: application/json
 
 ###
-POST http://localhost:8080/test-insertion/copy-by-file/200
+POST http://localhost:8080/test-insertion/copy-by-file/200?transactionId=c2cfa59d-69cc-43b3-a749-c3c44dd04333
 Content-Type: application/json
 
 ###
@@ -38,7 +102,7 @@ POST http://localhost:8080/test-insertion/copy-by-binary-file-and-property/200
 Content-Type: application/json
 
 ###
-POST http://localhost:8080/test-insertion/insert/200
+POST http://localhost:8080/test-insertion/insert/1
 Content-Type: application/json
 
 ###
@@ -46,7 +110,7 @@ POST http://localhost:8080/test-insertion/insert-prepared-statement/200
 Content-Type: application/json
 
 ###
-POST http://localhost:8080/test-insertion/insert-prepared-statement-unnest/200
+POST http://localhost:8080/test-insertion/insert-prepared-statement-unnest/10
 Content-Type: application/json
 
 ###
@@ -54,11 +118,31 @@ POST http://localhost:8080/test-insertion/insert-prepared-statement/200?orderNum
 Content-Type: application/json
 
 ###
+POST http://localhost:8080/test-insertion/insert-by-pg-query/200?transactionId=c2cfa59d-69cc-43b3-a749-c3c44dd04323
+Content-Type: application/json
+
+###
+POST http://localhost:8080/test-insertion/insert-by-pg-query-with-app-loop/200?transactionId=c2cfa59d-69cc-43b3-a749-c3c44dd04323
+Content-Type: application/json
+
+###
+POST http://localhost:8080/test-insertion/insert-prepared-statement/200?transactionId=c2cfa59d-69cc-43b3-a749-c3c44dd04323
+Content-Type: application/json
+
+###
+POST http://localhost:8080/test-insertion/insert-by-spring-with-async/200?transactionId=a833fee4-91b9-4804-ad58-c12377b218ef
+Content-Type: application/json
+
+###
+POST http://localhost:8080/test-insertion/update-only-one-field-with-common-condition-after-insert/2000
+Content-Type: application/json
+
+###
 POST http://localhost:8080/test-insertion/update-only-one-field-with-common-condition/NumberForUpdate?prop10=UpdProp1
 Content-Type: application/json
 
 ###
-POST http://localhost:8080/test-insertion/update/40
+POST http://localhost:8080/test-insertion/update/10
 Content-Type: application/json
 
 ###
@@ -86,7 +170,7 @@ Content-Type: application/json
 #Content-Type: application/json
 
 ###
-POST http://localhost:8080/test-insertion/spring/6
+POST http://localhost:8080/test-insertion/spring/2
 Content-Type: application/json
 
 ###
@@ -122,5 +206,5 @@ POST http://localhost:8080/test-insertion/spring-by-crud-repository/5
 Content-Type: application/json
 
 ###
-POST http://localhost:8080/test-insertion/spring-update/5
+POST http://localhost:8080/test-insertion/spring-update/10
 Content-Type: application/json
