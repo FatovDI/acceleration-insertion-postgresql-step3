@@ -1,2 +1,0 @@
--- ALTER TABLE PAYMENT_DOCUMENT ADD COLUMN ready_to_read bool NOT NULL DEFAULT true;
-select 1;

@@ -3,7 +3,6 @@
 batch_insertion:
   batch_size: 5000
   pool_size: 8
-  concurrent_saves: 4
 
 logging:
   level:
@@ -22,6 +21,8 @@ spring:
         order_inserts: true
         order_updates: true
         batch_versioned_data: true
+        session_factory:
+          statement_inspector: com.example.postgresqlinsertion.logic.sys.SqlInterceptor
 #        format_sql: false
     open-in-view: false
 #  sql:

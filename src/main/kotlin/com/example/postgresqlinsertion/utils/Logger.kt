@@ -1,4 +1,4 @@
-package com.example.postgresqlinsertion.batchinsertion.utils
+package com.example.postgresqlinsertion.utils
 
 import org.slf4j.LoggerFactory
 
