@@ -4,7 +4,6 @@ plugins {
 	id("org.springframework.boot") version "2.6.4"
 	id("io.spring.dependency-management") version "1.1.0"
 	id("org.jetbrains.kotlin.kapt") version "1.8.10"
-	id("me.champeau.jmh") version "0.6.8"
 	kotlin("jvm") version "1.8.21"
 	kotlin("plugin.spring") version "1.8.21"
 }
@@ -24,13 +23,11 @@ dependencies {
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
 	implementation("jakarta.persistence:jakarta.persistence-api")
 	implementation("org.flywaydb:flyway-core")
-	implementation("org.openjdk.jmh:jmh-core:1.36")
 	implementation("org.postgresql:postgresql:42.6.0")
 	implementation("org.hibernate:hibernate-jpamodelgen")
 	implementation("com.fasterxml.uuid:java-uuid-generator:5.1.0")
 
 	kapt("org.hibernate:hibernate-jpamodelgen")
-	kaptJmh("org.openjdk.jmh:jmh-generator-annprocess:1.36")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.testcontainers:postgresql:1.17.6")
@@ -38,7 +35,6 @@ dependencies {
 }
 
 allOpen {
-	annotation("org.openjdk.jmh.annotations.State")
 	annotation("javax.persistence.Entity")
 	annotation("javax.persistence.MappedSuperclass")
 	annotation("javax.persistence.Embeddable")

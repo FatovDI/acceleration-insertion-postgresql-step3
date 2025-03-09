@@ -1,4 +1,4 @@
-package com.example.postgresqlinsertion.batchinsertion.utils
+package com.example.postgresqlinsertion.utils
 
 fun String.toKebabCase() = stringToSplitCase(this, "-")
 

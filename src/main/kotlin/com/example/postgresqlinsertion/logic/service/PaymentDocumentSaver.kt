@@ -1,9 +1,6 @@
 package com.example.postgresqlinsertion.logic.service
 
-import com.example.postgresqlinsertion.batchinsertion.api.SqlHelper
-import com.example.postgresqlinsertion.logic.entity.PaymentDocumentActiveTransactionEntity
 import com.example.postgresqlinsertion.logic.entity.PaymentDocumentEntity
-import com.example.postgresqlinsertion.logic.repository.PaymentDocumentActiveTransactionRepository
 import com.example.postgresqlinsertion.logic.repository.PaymentDocumentRepository
 import org.hibernate.SessionFactory
 import org.springframework.beans.factory.annotation.Value
@@ -19,10 +16,8 @@ import javax.sql.DataSource
 @Component
 class PaymentDocumentSaver(
     val paymentDocumentRepository: PaymentDocumentRepository,
-    val activeTransactionRepository: PaymentDocumentActiveTransactionRepository,
     val sessionFactory: SessionFactory,
     val dataSource: DataSource,
-    val sqlHelper: SqlHelper
 ) {
 
     @Value("\${batch_insertion.batch_size}")
@@ -104,9 +99,7 @@ class PaymentDocumentSaver(
     }
 
     fun setTransactionId(ids: List<Long>): Array<IntArray> {
-//        val transactionId = getRandomString(10)
-//        val transactionId = UUID.randomUUID()
-        val transactionId = sqlHelper.nextTransactionId()
+        val transactionId = UUID.randomUUID()
         return jdbcTemplate.batchUpdate(
             "update payment_document set transaction_id = ? where id = ?",
             ids, batchSize

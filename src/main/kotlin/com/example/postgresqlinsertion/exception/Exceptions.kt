@@ -1,4 +1,4 @@
-package com.example.postgresqlinsertion.batchinsertion.exception
+package com.example.postgresqlinsertion.exception
 
 class BatchInsertionException : RuntimeException {
 

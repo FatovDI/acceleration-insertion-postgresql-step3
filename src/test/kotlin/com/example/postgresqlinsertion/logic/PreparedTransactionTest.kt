@@ -1,4 +1,4 @@
-package com.example.postgresqlinsertion.batchinsertion.impl.processor
+package com.example.postgresqlinsertion.logic
 
 import com.example.postgresqlinsertion.AbstractTestcontainersIntegrationTest
 import org.assertj.core.api.Assertions.assertThat
